@@ -349,6 +349,14 @@ func doRequest(c *gin.Context, req *http.Request, info *common.RelayInfo) (*http
 		return nil, errors.New("resp is nil")
 	}
 
+	// Decompress response body if needed (handles gzip/deflate/brotli)
+	// For streaming requests, skip magic byte sniffing to avoid blocking SSE connections
+	if err := service.DecompressResponseBody(resp, info.IsStream); err != nil {
+		logger.LogError(c, "decompress upstream response failed: "+err.Error())
+		_ = resp.Body.Close()
+		return nil, types.NewError(err, types.ErrorCodeDoRequestFailed, types.ErrOptionWithHideErrMsg("upstream error: invalid compressed response"))
+	}
+
 	_ = req.Body.Close()
 	_ = c.Request.Body.Close()
 	return resp, nil
