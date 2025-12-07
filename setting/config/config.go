@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"math"
 	"reflect"
 	"strconv"
 	"strings"
@@ -212,13 +213,21 @@ func updateConfigFromMap(config interface{}, configMap map[string]string) error 
 		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 			intValue, err := strconv.ParseInt(strValue, 10, 64)
 			if err != nil {
-				continue
+				floatValue, floatErr := strconv.ParseFloat(strValue, 64)
+				if floatErr != nil {
+					continue
+				}
+				intValue = int64(math.Round(floatValue))
 			}
 			field.SetInt(intValue)
 		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 			uintValue, err := strconv.ParseUint(strValue, 10, 64)
 			if err != nil {
-				continue
+				floatValue, floatErr := strconv.ParseFloat(strValue, 64)
+				if floatErr != nil || floatValue < 0 {
+					continue
+				}
+				uintValue = uint64(math.Round(floatValue))
 			}
 			field.SetUint(uintValue)
 		case reflect.Float32, reflect.Float64:
