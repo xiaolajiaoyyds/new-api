@@ -176,7 +176,7 @@ func getOrCompileRegex(pattern string) *regexp.Regexp {
 
 	var regexPattern string
 	if strings.HasPrefix(pattern, regexPrefix) {
-		regexPattern = "(?i)" + strings.TrimPrefix(pattern, regexPrefix)
+		regexPattern = "(?im)" + strings.TrimPrefix(pattern, regexPrefix)
 	} else {
 		regexPattern = "(?i)" + regexp.QuoteMeta(pattern)
 	}
