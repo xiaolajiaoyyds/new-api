@@ -90,6 +90,11 @@ func AddRedemption(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": err.Error()})
 		return
 	}
+	// 处理兑换次数，默认为1
+	redeemCount := redemption.RedeemCount
+	if redeemCount < 0 {
+		redeemCount = 1
+	}
 	var keys []string
 	for i := 0; i < redemption.Count; i++ {
 		key := common.GetUUID()
@@ -100,6 +105,7 @@ func AddRedemption(c *gin.Context) {
 			CreatedTime: common.GetTimestamp(),
 			Quota:       redemption.Quota,
 			ExpiredTime: redemption.ExpiredTime,
+			RedeemCount: redeemCount,
 		}
 		err = cleanRedemption.Insert()
 		if err != nil {
@@ -156,6 +162,9 @@ func UpdateRedemption(c *gin.Context) {
 		cleanRedemption.Name = redemption.Name
 		cleanRedemption.Quota = redemption.Quota
 		cleanRedemption.ExpiredTime = redemption.ExpiredTime
+		if redemption.RedeemCount >= 0 {
+			cleanRedemption.RedeemCount = redemption.RedeemCount
+		}
 	}
 	if statusOnly != "" {
 		cleanRedemption.Status = redemption.Status

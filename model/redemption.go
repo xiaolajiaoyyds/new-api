@@ -20,7 +20,9 @@ type Redemption struct {
 	Quota        int            `json:"quota" gorm:"default:100"`
 	CreatedTime  int64          `json:"created_time" gorm:"bigint"`
 	RedeemedTime int64          `json:"redeemed_time" gorm:"bigint"`
-	Count        int            `json:"count" gorm:"-:all"` // only for api request
+	Count        int            `json:"count" gorm:"-:all"`         // only for api request
+	RedeemCount  int            `json:"redeem_count" gorm:"default:1"` // 可兑换次数，0 表示无限
+	UsedCount    int            `json:"used_count" gorm:"default:0"`   // 已兑换次数
 	UsedUserId   int            `json:"used_user_id"`
 	DeletedAt    gorm.DeletedAt `gorm:"index"`
 	ExpiredTime  int64          `json:"expired_time" gorm:"bigint"` // 过期时间，0 表示不过期
@@ -132,18 +134,26 @@ func Redeem(key string, userId int) (quota int, err error) {
 			return errors.New("无效的兑换码")
 		}
 		if redemption.Status != common.RedemptionCodeStatusEnabled {
-			return errors.New("该兑换码已被使用")
+			return errors.New("该兑换码已被使用或已禁用")
 		}
 		if redemption.ExpiredTime != 0 && redemption.ExpiredTime < common.GetTimestamp() {
 			return errors.New("该兑换码已过期")
+		}
+		// 检查兑换次数：RedeemCount=0 表示无限兑换，否则检查已用次数
+		if redemption.RedeemCount != 0 && redemption.UsedCount >= redemption.RedeemCount {
+			return errors.New("该兑换码已达到最大兑换次数")
 		}
 		err = tx.Model(&User{}).Where("id = ?", userId).Update("quota", gorm.Expr("quota + ?", redemption.Quota)).Error
 		if err != nil {
 			return err
 		}
 		redemption.RedeemedTime = common.GetTimestamp()
-		redemption.Status = common.RedemptionCodeStatusUsed
+		redemption.UsedCount++
 		redemption.UsedUserId = userId
+		// 只有当设置了兑换次数限制且已达到限制时才标记为已使用
+		if redemption.RedeemCount != 0 && redemption.UsedCount >= redemption.RedeemCount {
+			redemption.Status = common.RedemptionCodeStatusUsed
+		}
 		err = tx.Save(redemption).Error
 		return err
 	})
@@ -168,7 +178,7 @@ func (redemption *Redemption) SelectUpdate() error {
 // Update Make sure your token's fields is completed, because this will update non-zero values
 func (redemption *Redemption) Update() error {
 	var err error
-	err = DB.Model(redemption).Select("name", "status", "quota", "redeemed_time", "expired_time").Updates(redemption).Error
+	err = DB.Model(redemption).Select("name", "status", "quota", "redeemed_time", "expired_time", "redeem_count", "used_count").Updates(redemption).Error
 	return err
 }
 
