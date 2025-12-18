@@ -20,12 +20,19 @@ type Redemption struct {
 	Quota        int            `json:"quota" gorm:"default:100"`
 	CreatedTime  int64          `json:"created_time" gorm:"bigint"`
 	RedeemedTime int64          `json:"redeemed_time" gorm:"bigint"`
-	Count        int            `json:"count" gorm:"-:all"`         // only for api request
+	Count        int            `json:"count" gorm:"-:all"`            // only for api request
 	RedeemCount  int            `json:"redeem_count" gorm:"default:1"` // 可兑换次数，0 表示无限
 	UsedCount    int            `json:"used_count" gorm:"default:0"`   // 已兑换次数
 	UsedUserId   int            `json:"used_user_id"`
 	DeletedAt    gorm.DeletedAt `gorm:"index"`
 	ExpiredTime  int64          `json:"expired_time" gorm:"bigint"` // 过期时间，0 表示不过期
+}
+
+type RedemptionUsage struct {
+	Id           int   `json:"id" gorm:"primaryKey"`
+	RedemptionId int   `json:"redemption_id" gorm:"index;uniqueIndex:idx_redemption_user"`
+	UserId       int   `json:"user_id" gorm:"index;uniqueIndex:idx_redemption_user"`
+	RedeemedTime int64 `json:"redeemed_time" gorm:"bigint"`
 }
 
 func GetAllRedemptions(startIdx int, num int) (redemptions []*Redemption, total int64, err error) {
@@ -143,8 +150,23 @@ func Redeem(key string, userId int) (quota int, err error) {
 		if redemption.RedeemCount != 0 && redemption.UsedCount >= redemption.RedeemCount {
 			return errors.New("该兑换码已达到最大兑换次数")
 		}
+		// 检查用户是否已兑换过此兑换码（每个用户只能兑换一次）
+		var usageCount int64
+		tx.Model(&RedemptionUsage{}).Where("redemption_id = ? AND user_id = ?", redemption.Id, userId).Count(&usageCount)
+		if usageCount > 0 {
+			return errors.New("您已兑换过此兑换码")
+		}
 		err = tx.Model(&User{}).Where("id = ?", userId).Update("quota", gorm.Expr("quota + ?", redemption.Quota)).Error
 		if err != nil {
+			return err
+		}
+		// 记录兑换历史
+		usage := &RedemptionUsage{
+			RedemptionId: redemption.Id,
+			UserId:       userId,
+			RedeemedTime: common.GetTimestamp(),
+		}
+		if err = tx.Create(usage).Error; err != nil {
 			return err
 		}
 		redemption.RedeemedTime = common.GetTimestamp()
