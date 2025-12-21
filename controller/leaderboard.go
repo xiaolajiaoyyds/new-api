@@ -88,3 +88,39 @@ func GetUsageLeaderboard(c *gin.Context) {
 		"data":    response,
 	})
 }
+
+type ModelLeaderboardEntry struct {
+	Rank         int     `json:"rank"`
+	ModelName    string  `json:"model_name"`
+	RequestCount int64   `json:"request_count"`
+	TotalTokens  int64   `json:"total_tokens"`
+	AmountUSD    float64 `json:"amount_usd"`
+}
+
+func GetModelLeaderboard(c *gin.Context) {
+	models, err := model.GetModelUsageLeaderboard(100)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	entries := make([]ModelLeaderboardEntry, 0, len(models))
+	for i, m := range models {
+		entries = append(entries, ModelLeaderboardEntry{
+			Rank:         i + 1,
+			ModelName:    m.ModelName,
+			RequestCount: m.RequestCount,
+			TotalTokens:  m.TotalTokens,
+			AmountUSD:    float64(m.TotalQuota) / common.QuotaPerUnit,
+		})
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "",
+		"data":    entries,
+	})
+}

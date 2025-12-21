@@ -409,3 +409,23 @@ func DeleteOldLog(ctx context.Context, targetTimestamp int64, limit int) (int64,
 
 	return total, nil
 }
+
+type ModelLeaderboardEntry struct {
+	ModelName    string `json:"model_name"`
+	RequestCount int64  `json:"request_count"`
+	TotalTokens  int64  `json:"total_tokens"`
+	TotalQuota   int64  `json:"total_quota"`
+}
+
+func GetModelUsageLeaderboard(limit int) ([]ModelLeaderboardEntry, error) {
+	var entries []ModelLeaderboardEntry
+	err := LOG_DB.Table("logs").
+		Select("model_name, COUNT(*) as request_count, SUM(prompt_tokens + completion_tokens) as total_tokens, SUM(quota) as total_quota").
+		Where("type = ?", LogTypeConsume).
+		Where("model_name != ''").
+		Group("model_name").
+		Order("request_count DESC").
+		Limit(limit).
+		Find(&entries).Error
+	return entries, err
+}
