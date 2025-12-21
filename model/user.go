@@ -953,3 +953,35 @@ func GetUsageLeaderboard(limit int) ([]LeaderboardUser, error) {
 		Find(&users).Error
 	return users, err
 }
+
+func GetUserRank(userId int) (int, *LeaderboardUser, error) {
+	var user User
+	err := DB.Select("id, display_name, linux_do_username, linux_do_avatar, linux_do_level, request_count, used_quota").
+		Where("id = ?", userId).
+		First(&user).Error
+	if err != nil {
+		return 0, nil, err
+	}
+
+	if user.UsedQuota <= 0 {
+		return 0, nil, nil
+	}
+
+	var rank int64
+	err = DB.Model(&User{}).
+		Where("status = ?", common.UserStatusEnabled).
+		Where("used_quota > ?", user.UsedQuota).
+		Count(&rank).Error
+	if err != nil {
+		return 0, nil, err
+	}
+
+	return int(rank + 1), &LeaderboardUser{
+		DisplayName:     user.DisplayName,
+		LinuxDOUsername: user.LinuxDOUsername,
+		LinuxDOAvatar:   user.LinuxDOAvatar,
+		LinuxDOLevel:    user.LinuxDOLevel,
+		RequestCount:    user.RequestCount,
+		UsedQuota:       user.UsedQuota,
+	}, nil
+}

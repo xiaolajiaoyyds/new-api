@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Typography, Avatar, Tag } from '@douyinfe/semi-ui';
+import { Typography, Avatar, Tag, Card } from '@douyinfe/semi-ui';
+import { IconUser } from '@douyinfe/semi-icons';
 import { useTranslation } from 'react-i18next';
 import CardTable from '../../../../components/common/ui/CardTable';
 import { API, showError } from '../../../../helpers';
@@ -8,6 +9,7 @@ import { renderNumber } from '../../../../helpers/render';
 const LeaderboardTab = () => {
   const { t } = useTranslation();
   const [data, setData] = useState([]);
+  const [myRank, setMyRank] = useState(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -17,7 +19,8 @@ const LeaderboardTab = () => {
         const res = await API.get('/api/leaderboard');
         const { success, message, data: resData } = res.data;
         if (success) {
-          setData(resData || []);
+          setData(resData?.leaderboard || []);
+          setMyRank(resData?.my_rank || null);
         } else {
           showError(message);
         }
@@ -49,6 +52,47 @@ const LeaderboardTab = () => {
       4: 'orange',
     };
     return colors[level] || 'grey';
+  };
+
+  const renderUserCell = (record) => {
+    const hasLinuxDO = record.linux_do_username && record.linux_do_avatar;
+    const displayName = hasLinuxDO
+      ? record.linux_do_username
+      : record.display_name || t('匿名用户');
+    const avatarSrc = hasLinuxDO ? record.linux_do_avatar : null;
+
+    return (
+      <div className='flex items-center gap-2'>
+        <div className='relative'>
+          {avatarSrc ? (
+            <Avatar size='small' src={avatarSrc} />
+          ) : (
+            <Avatar size='small' color={stringToColor(displayName)}>
+              {displayName?.charAt(0)?.toUpperCase() || '?'}
+            </Avatar>
+          )}
+          {hasLinuxDO && record.linux_do_level > 0 && (
+            <Tag
+              color={getLevelColor(record.linux_do_level)}
+              size='small'
+              style={{
+                position: 'absolute',
+                bottom: -4,
+                right: -8,
+                fontSize: '10px',
+                padding: '0 4px',
+                minWidth: 'auto',
+                height: '14px',
+                lineHeight: '14px',
+              }}
+            >
+              {record.linux_do_level}
+            </Tag>
+          )}
+        </div>
+        <Typography.Text>{displayName}</Typography.Text>
+      </div>
+    );
   };
 
   const columns = [
@@ -89,46 +133,7 @@ const LeaderboardTab = () => {
       title: t('用户'),
       dataIndex: 'linux_do_username',
       key: 'user',
-      render: (_, record) => {
-        const hasLinuxDO = record.linux_do_username && record.linux_do_avatar;
-        const displayName = hasLinuxDO
-          ? record.linux_do_username
-          : record.display_name || t('匿名用户');
-        const avatarSrc = hasLinuxDO ? record.linux_do_avatar : null;
-
-        return (
-          <div className='flex items-center gap-2'>
-            <div className='relative'>
-              {avatarSrc ? (
-                <Avatar size='small' src={avatarSrc} />
-              ) : (
-                <Avatar size='small' color={stringToColor(displayName)}>
-                  {displayName?.charAt(0)?.toUpperCase() || '?'}
-                </Avatar>
-              )}
-              {hasLinuxDO && record.linux_do_level > 0 && (
-                <Tag
-                  color={getLevelColor(record.linux_do_level)}
-                  size='small'
-                  style={{
-                    position: 'absolute',
-                    bottom: -4,
-                    right: -8,
-                    fontSize: '10px',
-                    padding: '0 4px',
-                    minWidth: 'auto',
-                    height: '14px',
-                    lineHeight: '14px',
-                  }}
-                >
-                  {record.linux_do_level}
-                </Tag>
-              )}
-            </div>
-            <Typography.Text>{displayName}</Typography.Text>
-          </div>
-        );
-      },
+      render: (_, record) => renderUserCell(record),
     },
     {
       title: t('请求次数'),
@@ -152,6 +157,84 @@ const LeaderboardTab = () => {
 
   return (
     <div className='p-4'>
+      {myRank && (
+        <Card
+          className='mb-4'
+          bodyStyle={{ padding: '12px 16px' }}
+          style={{
+            background:
+              'linear-gradient(135deg, var(--semi-color-primary-light-default) 0%, var(--semi-color-primary-light-hover) 100%)',
+            border: '1px solid var(--semi-color-primary)',
+          }}
+        >
+          <div className='flex items-center justify-between flex-wrap gap-3'>
+            <div className='flex items-center gap-3'>
+              <IconUser size='large' style={{ color: 'var(--semi-color-primary)' }} />
+              <div>
+                <Typography.Text strong style={{ fontSize: '14px' }}>
+                  {t('我的排名')}
+                </Typography.Text>
+                <div className='flex items-center gap-2 mt-1'>
+                  {renderUserCell(myRank)}
+                </div>
+              </div>
+            </div>
+            <div className='flex items-center gap-6 flex-wrap'>
+              <div className='text-center'>
+                <Typography.Text
+                  strong
+                  style={{ fontSize: '24px', color: 'var(--semi-color-primary)' }}
+                >
+                  #{myRank.rank}
+                </Typography.Text>
+                <Typography.Text
+                  type='tertiary'
+                  size='small'
+                  style={{ display: 'block' }}
+                >
+                  {t('排名')}
+                </Typography.Text>
+              </div>
+              <div className='text-center'>
+                <Typography.Text strong style={{ fontSize: '16px' }}>
+                  {renderNumber(myRank.request_count || 0)}
+                </Typography.Text>
+                <Typography.Text
+                  type='tertiary'
+                  size='small'
+                  style={{ display: 'block' }}
+                >
+                  {t('请求次数')}
+                </Typography.Text>
+              </div>
+              <div className='text-center'>
+                <Typography.Text strong style={{ fontSize: '16px' }}>
+                  {renderNumber(myRank.used_quota || 0)}
+                </Typography.Text>
+                <Typography.Text
+                  type='tertiary'
+                  size='small'
+                  style={{ display: 'block' }}
+                >
+                  {t('Token 用量')}
+                </Typography.Text>
+              </div>
+              <div className='text-center'>
+                <Typography.Text strong style={{ fontSize: '16px' }}>
+                  ${(myRank.amount_usd || 0).toFixed(2)}
+                </Typography.Text>
+                <Typography.Text
+                  type='tertiary'
+                  size='small'
+                  style={{ display: 'block' }}
+                >
+                  {t('消费金额')}
+                </Typography.Text>
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
       <CardTable
         loading={loading}
         columns={columns}

@@ -6,6 +6,7 @@ import (
 	"github.com/QuantumNous/new-api/common"
 	"github.com/QuantumNous/new-api/model"
 
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,6 +19,11 @@ type LeaderboardEntry struct {
 	RequestCount    int     `json:"request_count"`
 	UsedQuota       int     `json:"used_quota"`
 	AmountUSD       float64 `json:"amount_usd"`
+}
+
+type LeaderboardResponse struct {
+	Leaderboard []LeaderboardEntry `json:"leaderboard"`
+	MyRank      *LeaderboardEntry  `json:"my_rank,omitempty"`
 }
 
 func GetUsageLeaderboard(c *gin.Context) {
@@ -49,9 +55,36 @@ func GetUsageLeaderboard(c *gin.Context) {
 		})
 	}
 
+	response := LeaderboardResponse{
+		Leaderboard: entries,
+	}
+
+	// Get current user's rank if logged in
+	session := sessions.Default(c)
+	userId := session.Get("id")
+	if userId != nil {
+		rank, userData, err := model.GetUserRank(userId.(int))
+		if err == nil && userData != nil {
+			displayName := userData.DisplayName
+			if displayName == "" {
+				displayName = "Anonymous"
+			}
+			response.MyRank = &LeaderboardEntry{
+				Rank:            rank,
+				DisplayName:     displayName,
+				LinuxDOUsername: userData.LinuxDOUsername,
+				LinuxDOAvatar:   userData.LinuxDOAvatar,
+				LinuxDOLevel:    userData.LinuxDOLevel,
+				RequestCount:    userData.RequestCount,
+				UsedQuota:       userData.UsedQuota,
+				AmountUSD:       float64(userData.UsedQuota) / common.QuotaPerUnit,
+			}
+		}
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "",
-		"data":    entries,
+		"data":    response,
 	})
 }
