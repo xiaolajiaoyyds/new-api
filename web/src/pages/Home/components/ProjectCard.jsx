@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Typography, Skeleton } from '@douyinfe/semi-ui';
+import { Card, Typography, Skeleton, Tag } from '@douyinfe/semi-ui';
 import { IconGithubLogo, IconStar } from '@douyinfe/semi-icons';
 import { useTranslation } from 'react-i18next';
 
@@ -38,6 +38,11 @@ const ProjectCard = () => {
             <Typography.Text type='secondary'>
               {t('超简单拥有自己的代理池，只需要有节点即可')}
             </Typography.Text>
+            <div className='mt-1'>
+              <Tag color='pink' size='small' style={{ borderRadius: 12 }}>
+                💖 {t('如果对你有帮助，点个 Star 支持一下吧～')}
+              </Tag>
+            </div>
           </div>
         </div>
         <div className='flex items-center gap-1 bg-gray-50 dark:bg-gray-800 px-3 py-1 rounded-full border border-gray-200 dark:border-gray-700'>
