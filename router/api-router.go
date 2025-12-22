@@ -260,5 +260,22 @@ func SetApiRouter(router *gin.Engine) {
 			modelsRoute.PUT("/", controller.UpdateModelMeta)
 			modelsRoute.DELETE("/:id", controller.DeleteModelMeta)
 		}
+
+		faqBoardRoute := apiRouter.Group("/faq/board")
+		{
+			faqBoardRoute.GET("/", controller.GetFAQBoardPosts)
+			faqBoardRoute.GET("/mine", middleware.UserAuth(), controller.GetMyFAQBoardPosts)
+			faqBoardRoute.POST("/", middleware.UserAuth(), controller.CreateFAQBoardPost)
+			faqBoardRoute.PUT("/", middleware.UserAuth(), controller.UpdateFAQBoardPost)
+			faqBoardRoute.DELETE("/:id", middleware.UserAuth(), controller.DeleteFAQBoardPost)
+
+			manageRoute := faqBoardRoute.Group("/manage")
+			manageRoute.Use(middleware.AdminAuth())
+			{
+				manageRoute.GET("/", controller.GetFAQBoardManageList)
+				manageRoute.POST("/:id/approve", controller.ApproveFAQBoardPost)
+				manageRoute.POST("/:id/reject", controller.RejectFAQBoardPost)
+			}
+		}
 	}
 }

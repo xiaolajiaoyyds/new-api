@@ -26,6 +26,7 @@ import NoticeModal from '../../components/layout/NoticeModal';
 import TutorialTab from './components/TutorialTab';
 import LeaderboardTab from './components/LeaderboardTab';
 import ProjectCard from './components/ProjectCard';
+import FAQTab from './components/FAQTab';
 
 const Home = () => {
   const { t } = useTranslation();
@@ -64,7 +65,10 @@ const Home = () => {
         <ProjectCard />
 
         <Card>
-          <Tabs type='line' defaultActiveKey='tutorial'>
+          <Tabs type='line' defaultActiveKey='faq'>
+            <TabPane tab={t('常见问题')} itemKey='faq'>
+              <FAQTab />
+            </TabPane>
             <TabPane tab={t('教程')} itemKey='tutorial'>
               <TutorialTab />
             </TabPane>

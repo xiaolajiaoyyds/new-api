@@ -29,6 +29,8 @@ import {
   Modal,
   Switch,
   Tooltip,
+  Tag,
+  Select,
 } from '@douyinfe/semi-ui';
 import {
   IllustrationNoResult,
@@ -54,6 +56,7 @@ const SettingsFAQ = ({ options, refresh }) => {
   const [faqForm, setFaqForm] = useState({
     question: '',
     answer: '',
+    category: 'default_group',
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -63,6 +66,20 @@ const SettingsFAQ = ({ options, refresh }) => {
   const [panelEnabled, setPanelEnabled] = useState(true);
 
   const columns = [
+    {
+      title: t('分类'),
+      dataIndex: 'category',
+      key: 'category',
+      width: 140,
+      render: (text) => {
+        const isClaudeCode = text === 'claude_code';
+        return (
+          <Tag color={isClaudeCode ? 'purple' : 'blue'}>
+            {isClaudeCode ? t('Claude Code') : t('Default 分组')}
+          </Tag>
+        );
+      },
+    },
     {
       title: t('问题标题'),
       dataIndex: 'question',
@@ -166,6 +183,7 @@ const SettingsFAQ = ({ options, refresh }) => {
     setFaqForm({
       question: '',
       answer: '',
+      category: 'default_group',
     });
     setShowFaqModal(true);
   };
@@ -175,6 +193,7 @@ const SettingsFAQ = ({ options, refresh }) => {
     setFaqForm({
       question: faq.question,
       answer: faq.answer,
+      category: faq.category || 'default_group',
     });
     setShowFaqModal(true);
   };
@@ -242,10 +261,10 @@ const SettingsFAQ = ({ options, refresh }) => {
     try {
       const parsed = JSON.parse(faqStr);
       const list = Array.isArray(parsed) ? parsed : [];
-      // 确保每个项目都有id
       const listWithIds = list.map((item, index) => ({
         ...item,
         id: item.id || index + 1,
+        category: item.category || 'default_group',
       }));
       setFaqList(listWithIds);
     } catch (error) {
@@ -445,6 +464,16 @@ const SettingsFAQ = ({ options, refresh }) => {
           initValues={faqForm}
           key={editingFaq ? editingFaq.id : 'new'}
         >
+          <Form.Select
+            field='category'
+            label={t('问题分类')}
+            style={{ width: '100%' }}
+            initValue={faqForm.category}
+            onChange={(value) => setFaqForm({ ...faqForm, category: value })}
+          >
+            <Select.Option value='claude_code'>{t('Claude Code 相关')}</Select.Option>
+            <Select.Option value='default_group'>{t('Default 分组相关')}</Select.Option>
+          </Form.Select>
           <Form.Input
             field='question'
             label={t('问题标题')}
