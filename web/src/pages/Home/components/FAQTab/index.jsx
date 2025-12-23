@@ -25,7 +25,7 @@ const { Text, Title } = Typography;
 
 const FAQTab = () => {
   const { t } = useTranslation();
-  const [status] = useContext(StatusContext);
+  const [statusState] = useContext(StatusContext);
   const [userState] = useContext(UserContext);
   const [boardLoading, setBoardLoading] = useState(false);
   const [userMessages, setUserMessages] = useState([]);
@@ -37,8 +37,8 @@ const FAQTab = () => {
   const [total, setTotal] = useState(0);
   const [formData, setFormData] = useState({ title: '', question: '', solution: '' });
 
-  const claudeIssues = useMemo(() => (status?.faq || []).filter(item => item.category === 'claude_code'), [status?.faq]);
-  const groupIssues = useMemo(() => (status?.faq || []).filter(item => item.category !== 'claude_code'), [status?.faq]);
+  const claudeIssues = useMemo(() => (statusState?.status?.faq || []).filter(item => item.category === 'claude_code'), [statusState?.status?.faq]);
+  const groupIssues = useMemo(() => (statusState?.status?.faq || []).filter(item => item.category !== 'claude_code'), [statusState?.status?.faq]);
 
   const fetchBoardPosts = useCallback(async (pageNum = 1) => {
     setBoardLoading(true);

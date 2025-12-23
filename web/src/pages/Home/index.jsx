@@ -65,12 +65,12 @@ const Home = () => {
         <ProjectCard />
 
         <Card>
-          <Tabs type='line' defaultActiveKey='faq'>
-            <TabPane tab={t('常见问题')} itemKey='faq'>
-              <FAQTab />
-            </TabPane>
+          <Tabs type='line' defaultActiveKey='tutorial'>
             <TabPane tab={t('教程')} itemKey='tutorial'>
               <TutorialTab />
+            </TabPane>
+            <TabPane tab={t('常见问题')} itemKey='faq'>
+              <FAQTab />
             </TabPane>
             <TabPane tab={t('站点使用排行')} itemKey='leaderboard'>
               <LeaderboardTab />

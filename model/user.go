@@ -947,6 +947,7 @@ func GetUsageLeaderboard(limit int) ([]LeaderboardUser, error) {
 	err := DB.Model(&User{}).
 		Select("display_name, linux_do_username, linux_do_avatar, linux_do_level, request_count, used_quota").
 		Where("status = ?", common.UserStatusEnabled).
+		Where("role != ?", common.RoleRootUser).
 		Where("used_quota > 0").
 		Order("used_quota DESC").
 		Limit(limit).
@@ -970,6 +971,7 @@ func GetUserRank(userId int) (int, *LeaderboardUser, error) {
 	var rank int64
 	err = DB.Model(&User{}).
 		Where("status = ?", common.UserStatusEnabled).
+		Where("role != ?", common.RoleRootUser).
 		Where("used_quota > ?", user.UsedQuota).
 		Count(&rank).Error
 	if err != nil {
@@ -999,6 +1001,7 @@ func GetBalanceLeaderboard(limit int) ([]BalanceLeaderboardUser, error) {
 	err := DB.Model(&User{}).
 		Select("display_name, linux_do_username, linux_do_avatar, linux_do_level, quota").
 		Where("status = ?", common.UserStatusEnabled).
+		Where("role != ?", common.RoleRootUser).
 		Where("quota > 0").
 		Order("quota DESC").
 		Limit(limit).
@@ -1022,6 +1025,7 @@ func GetUserBalanceRank(userId int) (int, *BalanceLeaderboardUser, error) {
 	var rank int64
 	err = DB.Model(&User{}).
 		Where("status = ?", common.UserStatusEnabled).
+		Where("role != ?", common.RoleRootUser).
 		Where("quota > ?", user.Quota).
 		Count(&rank).Error
 	if err != nil {

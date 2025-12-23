@@ -410,8 +410,8 @@ const LeaderboardTab = () => {
         </TabPane>
         <TabPane
           tab={
-            <span>
-              <Squirrel size={14} style={{ marginRight: 4 }} />
+            <span style={{ display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap' }}>
+              <Squirrel size={14} style={{ marginRight: 4, flexShrink: 0 }} />
               {t('囤囤鼠排行')}
             </span>
           }
