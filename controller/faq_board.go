@@ -21,6 +21,10 @@ type FAQBoardReviewRequest struct {
 	ReviewNote string `json:"review_note"`
 }
 
+type FAQBoardReplyRequest struct {
+	AdminReply string `json:"admin_reply"`
+}
+
 func GetFAQBoardPosts(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
@@ -260,4 +264,53 @@ func RejectFAQBoardPost(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "rejected"})
+}
+
+func ReplyFAQBoardPost(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	if id == 0 {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "invalid id"})
+		return
+	}
+
+	var req FAQBoardReplyRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "invalid request"})
+		return
+	}
+	req.AdminReply = strings.TrimSpace(req.AdminReply)
+	if len(req.AdminReply) > 8000 {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "reply too long"})
+		return
+	}
+
+	post, err := model.GetFAQBoardPostById(id)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "post not found"})
+		return
+	}
+
+	post.AdminReply = req.AdminReply
+	post.RepliedBy = c.GetInt("id")
+	post.RepliedAt = common.GetTimestamp()
+
+	if err := post.Update(); err != nil {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "replied"})
+}
+
+func AdminDeleteFAQBoardPost(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	if id == 0 {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "invalid id"})
+		return
+	}
+
+	if err := model.DeleteFAQBoardPost(id); err != nil {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "deleted"})
 }

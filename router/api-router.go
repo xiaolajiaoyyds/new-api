@@ -276,6 +276,8 @@ func SetApiRouter(router *gin.Engine) {
 				manageRoute.GET("/", controller.GetFAQBoardManageList)
 				manageRoute.POST("/:id/approve", controller.ApproveFAQBoardPost)
 				manageRoute.POST("/:id/reject", controller.RejectFAQBoardPost)
+				manageRoute.POST("/:id/reply", controller.ReplyFAQBoardPost)
+				manageRoute.DELETE("/:id", controller.AdminDeleteFAQBoardPost)
 			}
 		}
 	}

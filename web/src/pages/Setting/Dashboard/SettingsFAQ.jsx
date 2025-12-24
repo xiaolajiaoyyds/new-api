@@ -39,6 +39,7 @@ import {
 import { Plus, Edit, Trash2, Save, HelpCircle } from 'lucide-react';
 import { API, showError, showSuccess } from '../../../helpers';
 import { useTranslation } from 'react-i18next';
+import useUnsavedChangesWarning from '../../../hooks/common/useUnsavedChangesWarning';
 
 const { Text } = Typography;
 
@@ -64,6 +65,9 @@ const SettingsFAQ = ({ options, refresh }) => {
 
   // 面板启用状态
   const [panelEnabled, setPanelEnabled] = useState(true);
+
+  // 未保存更改警告
+  useUnsavedChangesWarning(hasChanges, t('您有未保存的常见问答更改，确定要离开吗？'));
 
   const columns = [
     {

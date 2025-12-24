@@ -11,12 +11,13 @@ import {
   Tag,
   Tooltip,
   Select,
+  TextArea,
 } from '@douyinfe/semi-ui';
 import {
   IllustrationNoResult,
   IllustrationNoResultDark,
 } from '@douyinfe/semi-illustrations';
-import { Check, X, Eye, MessageSquare } from 'lucide-react';
+import { Check, X, Eye, MessageSquare, Trash2, MessageCircle } from 'lucide-react';
 import { API, showError, showSuccess } from '../../../helpers';
 import { useTranslation } from 'react-i18next';
 
@@ -32,8 +33,11 @@ const SettingsFAQBoard = () => {
   const [statusFilter, setStatusFilter] = useState(-1);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
+  const [showReplyModal, setShowReplyModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
   const [rejectNote, setRejectNote] = useState('');
+  const [replyContent, setReplyContent] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
 
   const fetchPosts = useCallback(async (page = 1, status = -1) => {
@@ -97,6 +101,49 @@ const SettingsFAQBoard = () => {
     }
   };
 
+  const handleReply = async () => {
+    if (!selectedPost) return;
+    setActionLoading(true);
+    try {
+      const res = await API.post(`/api/faq/board/manage/${selectedPost.id}/reply`, {
+        admin_reply: replyContent,
+      });
+      if (res.data.success) {
+        showSuccess(t('回复成功'));
+        setShowReplyModal(false);
+        setReplyContent('');
+        setSelectedPost(null);
+        fetchPosts(currentPage, statusFilter);
+      } else {
+        showError(res.data.message);
+      }
+    } catch (error) {
+      showError(error.message);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!selectedPost) return;
+    setActionLoading(true);
+    try {
+      const res = await API.delete(`/api/faq/board/manage/${selectedPost.id}`);
+      if (res.data.success) {
+        showSuccess(t('删除成功'));
+        setShowDeleteModal(false);
+        setSelectedPost(null);
+        fetchPosts(currentPage, statusFilter);
+      } else {
+        showError(res.data.message);
+      }
+    } catch (error) {
+      showError(error.message);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const getStatusTag = (status) => {
     switch (status) {
       case 0:
@@ -141,8 +188,25 @@ const SettingsFAQBoard = () => {
       key: 'question',
       render: (text) => (
         <Tooltip content={text} showArrow>
-          <div className='truncate max-w-[300px]'>{text}</div>
+          <div className='truncate max-w-[200px]'>{text}</div>
         </Tooltip>
+      ),
+    },
+    {
+      title: t('管理员回复'),
+      dataIndex: 'admin_reply',
+      key: 'admin_reply',
+      width: 150,
+      render: (text) => (
+        text ? (
+          <Tooltip content={text} showArrow>
+            <Tag color='blue' style={{ maxWidth: 120 }}>
+              <span className='truncate'>{t('已回复')}</span>
+            </Tag>
+          </Tooltip>
+        ) : (
+          <Tag color='grey'>{t('未回复')}</Tag>
+        )
       ),
     },
     {
@@ -156,7 +220,7 @@ const SettingsFAQBoard = () => {
       title: t('操作'),
       key: 'action',
       fixed: 'right',
-      width: 200,
+      width: 280,
       render: (_, record) => (
         <Space>
           <Button
@@ -196,6 +260,31 @@ const SettingsFAQBoard = () => {
               </Button>
             </>
           )}
+          <Button
+            icon={<MessageCircle size={14} />}
+            theme='light'
+            type='tertiary'
+            size='small'
+            onClick={() => {
+              setSelectedPost(record);
+              setReplyContent(record.admin_reply || '');
+              setShowReplyModal(true);
+            }}
+          >
+            {t('回复')}
+          </Button>
+          <Button
+            icon={<Trash2 size={14} />}
+            theme='light'
+            type='danger'
+            size='small'
+            onClick={() => {
+              setSelectedPost(record);
+              setShowDeleteModal(true);
+            }}
+          >
+            {t('删除')}
+          </Button>
         </Space>
       ),
     },
@@ -299,6 +388,19 @@ const SettingsFAQBoard = () => {
                 </div>
               </div>
             )}
+            {selectedPost.admin_reply && (
+              <div>
+                <Text strong style={{ color: 'var(--semi-color-primary)' }}>{t('管理员回复：')}</Text>
+                <div className='mt-1 p-3 bg-blue-50 rounded whitespace-pre-wrap'>
+                  {selectedPost.admin_reply}
+                </div>
+                {selectedPost.replied_at > 0 && (
+                  <Text type='tertiary' size='small'>
+                    {t('回复时间：')}{new Date(selectedPost.replied_at * 1000).toLocaleString()}
+                  </Text>
+                )}
+              </div>
+            )}
             {selectedPost.review_note && (
               <div>
                 <Text strong type='danger'>{t('拒绝原因：')}</Text>
@@ -339,6 +441,53 @@ const SettingsFAQBoard = () => {
             onChange={(v) => setRejectNote(v)}
           />
         </Form>
+      </Modal>
+
+      <Modal
+        title={t('回复留言')}
+        visible={showReplyModal}
+        onOk={handleReply}
+        onCancel={() => {
+          setShowReplyModal(false);
+          setReplyContent('');
+          setSelectedPost(null);
+        }}
+        okText={t('提交回复')}
+        cancelText={t('取消')}
+        confirmLoading={actionLoading}
+        width={600}
+      >
+        {selectedPost && (
+          <div className='mb-4'>
+            <Text strong>{t('用户问题：')}</Text>
+            <div className='mt-1 p-3 bg-gray-50 rounded whitespace-pre-wrap max-h-32 overflow-auto'>
+              {selectedPost.question}
+            </div>
+          </div>
+        )}
+        <TextArea
+          placeholder={t('请输入回复内容')}
+          rows={6}
+          value={replyContent}
+          onChange={(v) => setReplyContent(v)}
+          maxCount={8000}
+        />
+      </Modal>
+
+      <Modal
+        title={t('确认删除')}
+        visible={showDeleteModal}
+        onOk={handleDelete}
+        onCancel={() => {
+          setShowDeleteModal(false);
+          setSelectedPost(null);
+        }}
+        okText={t('确认删除')}
+        cancelText={t('取消')}
+        confirmLoading={actionLoading}
+        okButtonProps={{ type: 'danger', theme: 'solid' }}
+      >
+        <Text>{t('确定要删除此留言吗？此操作不可恢复。')}</Text>
       </Modal>
     </>
   );
