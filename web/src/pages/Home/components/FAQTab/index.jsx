@@ -12,6 +12,7 @@ import {
   Empty,
   Tag,
   Pagination,
+  Avatar,
 } from '@douyinfe/semi-ui';
 import { IconPlus, IconMinus } from '@douyinfe/semi-icons';
 import { HelpCircle, MessageSquare, Send } from 'lucide-react';
@@ -207,6 +208,12 @@ const FAQTab = () => {
                       <div className='mt-1 whitespace-pre-wrap'>{item.solution}</div>
                     </Card>
                   )}
+                  {item.admin_reply && (
+                    <Card className='mt-3 bg-blue-50' bodyStyle={{ padding: 12 }}>
+                      <Text style={{ color: 'var(--semi-color-primary)' }} strong>{t('管理员回复：')}</Text>
+                      <div className='mt-1 whitespace-pre-wrap'>{item.admin_reply}</div>
+                    </Card>
+                  )}
                   {showMyPosts && item.status === 2 && item.review_note && (
                     <Card className='mt-3 bg-red-50' bodyStyle={{ padding: 12 }}>
                       <Text type='danger' strong>{t('拒绝原因：')}</Text>
@@ -217,7 +224,12 @@ const FAQTab = () => {
               }
               extra={
                 <div className='text-right text-gray-400 text-sm'>
-                  <div>{item.user_name}</div>
+                  <div className='flex items-center justify-end gap-2'>
+                    {item.linux_do_avatar && (
+                      <Avatar size='extra-small' src={item.linux_do_avatar} />
+                    )}
+                    <span>{item.linux_do_username || item.user_name}</span>
+                  </div>
                   <div>{new Date(item.created_at * 1000).toLocaleDateString()}</div>
                 </div>
               }

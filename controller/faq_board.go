@@ -89,12 +89,27 @@ func CreateFAQBoardPost(c *gin.Context) {
 		return
 	}
 
+	userId := c.GetInt("id")
+	user, err := model.GetUserById(userId, false)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "user not found"})
+		return
+	}
+
+	// Use Linux.do username if available, otherwise use display_name
+	displayName := user.DisplayName
+	if user.LinuxDOUsername != "" {
+		displayName = user.LinuxDOUsername
+	}
+
 	post := &model.FAQBoardPost{
-		UserId:   c.GetInt("id"),
-		UserName: c.GetString("username"),
-		Title:    req.Title,
-		Question: req.Question,
-		Solution: req.Solution,
+		UserId:          userId,
+		UserName:        displayName,
+		LinuxDOUsername: user.LinuxDOUsername,
+		LinuxDOAvatar:   user.LinuxDOAvatar,
+		Title:           req.Title,
+		Question:        req.Question,
+		Solution:        req.Solution,
 	}
 	if err := post.Insert(); err != nil {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": err.Error()})
