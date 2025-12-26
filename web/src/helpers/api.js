@@ -134,10 +134,18 @@ export const buildApiPayload = (
   Object.entries(parameterMappings).forEach(([key, param]) => {
     const enabled = parameterEnabled[key];
     const value = inputs[param];
-    const hasValue = value !== undefined && value !== null;
+    const hasValue = value !== undefined && value !== null && value !== '';
 
     if (enabled && hasValue) {
-      payload[param] = value;
+      // max_tokens 和 seed 需要转换为整数
+      if (param === 'max_tokens' || param === 'seed') {
+        const numValue = parseInt(value, 10);
+        if (!isNaN(numValue)) {
+          payload[param] = numValue;
+        }
+      } else {
+        payload[param] = value;
+      }
     }
   });
 
