@@ -27,59 +27,112 @@ type LeaderboardResponse struct {
 }
 
 func GetUsageLeaderboard(c *gin.Context) {
-	users, err := model.GetUsageLeaderboard(100)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{
-			"success": false,
-			"message": err.Error(),
-		})
-		return
-	}
+	period := c.DefaultQuery("period", "all")
 
-	entries := make([]LeaderboardEntry, 0, len(users))
-	for i, user := range users {
-		displayName := user.DisplayName
-		if displayName == "" {
-			displayName = "Anonymous"
+	var entries []LeaderboardEntry
+	var myRankEntry *LeaderboardEntry
+
+	if period == "all" {
+		users, err := model.GetUsageLeaderboard(100)
+		if err != nil {
+			c.JSON(http.StatusOK, gin.H{
+				"success": false,
+				"message": err.Error(),
+			})
+			return
 		}
 
-		entries = append(entries, LeaderboardEntry{
-			Rank:            i + 1,
-			DisplayName:     displayName,
-			LinuxDOUsername: user.LinuxDOUsername,
-			LinuxDOAvatar:   user.LinuxDOAvatar,
-			LinuxDOLevel:    user.LinuxDOLevel,
-			RequestCount:    user.RequestCount,
-			UsedQuota:       user.UsedQuota,
-			AmountUSD:       float64(user.UsedQuota) / common.QuotaPerUnit,
-		})
+		for i, user := range users {
+			displayName := user.DisplayName
+			if displayName == "" {
+				displayName = "Anonymous"
+			}
+			entries = append(entries, LeaderboardEntry{
+				Rank:            i + 1,
+				DisplayName:     displayName,
+				LinuxDOUsername: user.LinuxDOUsername,
+				LinuxDOAvatar:   user.LinuxDOAvatar,
+				LinuxDOLevel:    user.LinuxDOLevel,
+				RequestCount:    user.RequestCount,
+				UsedQuota:       user.UsedQuota,
+				AmountUSD:       float64(user.UsedQuota) / common.QuotaPerUnit,
+			})
+		}
+
+		session := sessions.Default(c)
+		userId := session.Get("id")
+		if userId != nil {
+			rank, userData, err := model.GetUserRank(userId.(int))
+			if err == nil && userData != nil {
+				displayName := userData.DisplayName
+				if displayName == "" {
+					displayName = "Anonymous"
+				}
+				myRankEntry = &LeaderboardEntry{
+					Rank:            rank,
+					DisplayName:     displayName,
+					LinuxDOUsername: userData.LinuxDOUsername,
+					LinuxDOAvatar:   userData.LinuxDOAvatar,
+					LinuxDOLevel:    userData.LinuxDOLevel,
+					RequestCount:    userData.RequestCount,
+					UsedQuota:       userData.UsedQuota,
+					AmountUSD:       float64(userData.UsedQuota) / common.QuotaPerUnit,
+				}
+			}
+		}
+	} else {
+		users, err := model.GetUsageLeaderboardByPeriod(period, 100)
+		if err != nil {
+			c.JSON(http.StatusOK, gin.H{
+				"success": false,
+				"message": err.Error(),
+			})
+			return
+		}
+
+		for i, user := range users {
+			displayName := user.DisplayName
+			if displayName == "" {
+				displayName = "Anonymous"
+			}
+			entries = append(entries, LeaderboardEntry{
+				Rank:            i + 1,
+				DisplayName:     displayName,
+				LinuxDOUsername: user.LinuxDOUsername,
+				LinuxDOAvatar:   user.LinuxDOAvatar,
+				LinuxDOLevel:    user.LinuxDOLevel,
+				RequestCount:    int(user.RequestCount),
+				UsedQuota:       int(user.UsedQuota),
+				AmountUSD:       float64(user.UsedQuota) / common.QuotaPerUnit,
+			})
+		}
+
+		session := sessions.Default(c)
+		userId := session.Get("id")
+		if userId != nil {
+			rank, userData, err := model.GetUserRankByPeriod(userId.(int), period)
+			if err == nil && userData != nil {
+				displayName := userData.DisplayName
+				if displayName == "" {
+					displayName = "Anonymous"
+				}
+				myRankEntry = &LeaderboardEntry{
+					Rank:            rank,
+					DisplayName:     displayName,
+					LinuxDOUsername: userData.LinuxDOUsername,
+					LinuxDOAvatar:   userData.LinuxDOAvatar,
+					LinuxDOLevel:    userData.LinuxDOLevel,
+					RequestCount:    int(userData.RequestCount),
+					UsedQuota:       int(userData.UsedQuota),
+					AmountUSD:       float64(userData.UsedQuota) / common.QuotaPerUnit,
+				}
+			}
+		}
 	}
 
 	response := LeaderboardResponse{
 		Leaderboard: entries,
-	}
-
-	// Get current user's rank if logged in
-	session := sessions.Default(c)
-	userId := session.Get("id")
-	if userId != nil {
-		rank, userData, err := model.GetUserRank(userId.(int))
-		if err == nil && userData != nil {
-			displayName := userData.DisplayName
-			if displayName == "" {
-				displayName = "Anonymous"
-			}
-			response.MyRank = &LeaderboardEntry{
-				Rank:            rank,
-				DisplayName:     displayName,
-				LinuxDOUsername: userData.LinuxDOUsername,
-				LinuxDOAvatar:   userData.LinuxDOAvatar,
-				LinuxDOLevel:    userData.LinuxDOLevel,
-				RequestCount:    userData.RequestCount,
-				UsedQuota:       userData.UsedQuota,
-				AmountUSD:       float64(userData.UsedQuota) / common.QuotaPerUnit,
-			}
-		}
+		MyRank:      myRankEntry,
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -98,7 +151,17 @@ type ModelLeaderboardEntry struct {
 }
 
 func GetModelLeaderboard(c *gin.Context) {
-	models, err := model.GetModelUsageLeaderboard(100)
+	period := c.DefaultQuery("period", "all")
+
+	var models []model.ModelLeaderboardEntry
+	var err error
+
+	if period == "all" {
+		models, err = model.GetModelUsageLeaderboard(100)
+	} else {
+		models, err = model.GetModelLeaderboardByPeriod(period, 100)
+	}
+
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,

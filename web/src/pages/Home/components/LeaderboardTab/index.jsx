@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Typography, Avatar, Tag, Card, Tabs, TabPane } from '@douyinfe/semi-ui';
+import { Typography, Avatar, Tag, Card, Tabs, TabPane, RadioGroup, Radio } from '@douyinfe/semi-ui';
 import { IconUser, IconBox } from '@douyinfe/semi-icons';
 import { Squirrel } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -18,24 +18,26 @@ const LeaderboardTab = () => {
   const [userLoading, setUserLoading] = useState(false);
   const [modelLoading, setModelLoading] = useState(false);
   const [balanceLoading, setBalanceLoading] = useState(false);
+  const [userPeriod, setUserPeriod] = useState('all');
+  const [modelPeriod, setModelPeriod] = useState('all');
 
   useEffect(() => {
-    fetchUserData();
-  }, []);
+    fetchUserData(userPeriod);
+  }, [userPeriod]);
 
   useEffect(() => {
-    if (activeTab === 'models' && modelData.length === 0) {
-      fetchModelData();
+    if (activeTab === 'models') {
+      fetchModelData(modelPeriod);
     }
     if (activeTab === 'balance' && balanceData.length === 0) {
       fetchBalanceData();
     }
-  }, [activeTab]);
+  }, [activeTab, modelPeriod]);
 
-  const fetchUserData = async () => {
+  const fetchUserData = async (period = 'all') => {
     setUserLoading(true);
     try {
-      const res = await API.get('/api/leaderboard');
+      const res = await API.get(`/api/leaderboard?period=${period}`);
       const { success, message, data: resData } = res.data;
       if (success) {
         setUserData(resData?.leaderboard || []);
@@ -50,10 +52,10 @@ const LeaderboardTab = () => {
     }
   };
 
-  const fetchModelData = async () => {
+  const fetchModelData = async (period = 'all') => {
     setModelLoading(true);
     try {
-      const res = await API.get('/api/leaderboard/models');
+      const res = await API.get(`/api/leaderboard/models?period=${period}`);
       const { success, message, data: resData } = res.data;
       if (success) {
         setModelData(resData || []);
@@ -297,6 +299,19 @@ const LeaderboardTab = () => {
           }
           itemKey='users'
         >
+          <div className='mt-4 mb-4'>
+            <RadioGroup
+              type='button'
+              value={userPeriod}
+              onChange={(e) => setUserPeriod(e.target.value)}
+            >
+              <Radio value='24h'>{t('24小时')}</Radio>
+              <Radio value='7d'>{t('7天')}</Radio>
+              <Radio value='14d'>{t('14天')}</Radio>
+              <Radio value='30d'>{t('一个月')}</Radio>
+              <Radio value='all'>{t('总榜')}</Radio>
+            </RadioGroup>
+          </div>
           {myRank && (
             <Card
               className='mb-4 mt-4'
@@ -398,6 +413,19 @@ const LeaderboardTab = () => {
           }
           itemKey='models'
         >
+          <div className='mt-4 mb-4'>
+            <RadioGroup
+              type='button'
+              value={modelPeriod}
+              onChange={(e) => setModelPeriod(e.target.value)}
+            >
+              <Radio value='24h'>{t('24小时')}</Radio>
+              <Radio value='7d'>{t('7天')}</Radio>
+              <Radio value='14d'>{t('14天')}</Radio>
+              <Radio value='30d'>{t('一个月')}</Radio>
+              <Radio value='all'>{t('总榜')}</Radio>
+            </RadioGroup>
+          </div>
           <div className='mt-4'>
             <CardTable
               loading={modelLoading}
