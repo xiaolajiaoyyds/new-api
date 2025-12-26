@@ -214,7 +214,15 @@ func GetAllLogs(logType int, startTimestamp int64, endTimestamp int64, modelName
 		tx = tx.Where("logs.model_name like ?", modelName)
 	}
 	if username != "" {
-		tx = tx.Where("logs.username = ?", username)
+		var usernames []string
+		DB.Model(&User{}).
+			Where("username = ? OR linux_do_username = ? OR display_name = ?", username, username, username).
+			Pluck("username", &usernames)
+		if len(usernames) > 0 {
+			tx = tx.Where("logs.username IN ?", usernames)
+		} else {
+			tx = tx.Where("logs.username = ?", username)
+		}
 	}
 	if tokenName != "" {
 		tx = tx.Where("logs.token_name = ?", tokenName)
@@ -327,8 +335,17 @@ func SumUsedQuota(logType int, startTimestamp int64, endTimestamp int64, modelNa
 	rpmTpmQuery := LOG_DB.Table("logs").Select("count(*) rpm, sum(prompt_tokens) + sum(completion_tokens) tpm")
 
 	if username != "" {
-		tx = tx.Where("username = ?", username)
-		rpmTpmQuery = rpmTpmQuery.Where("username = ?", username)
+		var usernames []string
+		DB.Model(&User{}).
+			Where("username = ? OR linux_do_username = ? OR display_name = ?", username, username, username).
+			Pluck("username", &usernames)
+		if len(usernames) > 0 {
+			tx = tx.Where("username IN ?", usernames)
+			rpmTpmQuery = rpmTpmQuery.Where("username IN ?", usernames)
+		} else {
+			tx = tx.Where("username = ?", username)
+			rpmTpmQuery = rpmTpmQuery.Where("username = ?", username)
+		}
 	}
 	if tokenName != "" {
 		tx = tx.Where("token_name = ?", tokenName)
