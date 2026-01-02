@@ -81,13 +81,22 @@ func GetUsageLeaderboard(c *gin.Context) {
 			}
 		}
 	} else {
-		users, err := model.GetUsageLeaderboardByPeriod(period, 100)
-		if err != nil {
-			c.JSON(http.StatusOK, gin.H{
-				"success": false,
-				"message": err.Error(),
-			})
-			return
+		// Try to get from cache first for expensive periods (7d, 14d, 30d)
+		cachedUsers, cached := model.GetCachedUserLeaderboardByPeriod(period)
+		var users []model.UsageLeaderboardEntry
+		var err error
+
+		if cached {
+			users = cachedUsers
+		} else {
+			users, err = model.GetUsageLeaderboardByPeriod(period, 100)
+			if err != nil {
+				c.JSON(http.StatusOK, gin.H{
+					"success": false,
+					"message": err.Error(),
+				})
+				return
+			}
 		}
 
 		for i, user := range users {
@@ -159,7 +168,13 @@ func GetModelLeaderboard(c *gin.Context) {
 	if period == "all" {
 		models, err = model.GetModelUsageLeaderboard(100)
 	} else {
-		models, err = model.GetModelLeaderboardByPeriod(period, 100)
+		// Try to get from cache first for expensive periods (7d, 14d, 30d)
+		cachedModels, cached := model.GetCachedModelLeaderboardByPeriod(period)
+		if cached {
+			models = cachedModels
+		} else {
+			models, err = model.GetModelLeaderboardByPeriod(period, 100)
+		}
 	}
 
 	if err != nil {

@@ -92,6 +92,12 @@ func main() {
 	// 数据看板
 	go model.UpdateQuotaData()
 
+	// 榜单缓存初始化和定时刷新
+	if common.IsMasterNode {
+		model.InitLeaderboardCache()
+		model.StartLeaderboardCacheScheduler()
+	}
+
 	if os.Getenv("CHANNEL_UPDATE_FREQUENCY") != "" {
 		frequency, err := strconv.Atoi(os.Getenv("CHANNEL_UPDATE_FREQUENCY"))
 		if err != nil {
