@@ -24,7 +24,7 @@ import {
 import {
   IconSave,
   IconClose,
-  IconTicket,
+  IconUserAdd,
 } from '@douyinfe/semi-icons';
 
 const { Text, Title } = Typography;
@@ -197,7 +197,7 @@ const EditInvitationModal = (props) => {
             <Card className='!rounded-2xl shadow-sm border-0'>
               <div className='flex items-center mb-2'>
                 <Avatar size='small' color='blue' className='mr-2 shadow-md'>
-                  <IconTicket size={16} />
+                  <IconUserAdd size={16} />
                 </Avatar>
                 <div>
                   <Text className='text-lg font-medium'>
