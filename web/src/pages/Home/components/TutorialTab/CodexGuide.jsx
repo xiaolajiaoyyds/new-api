@@ -17,30 +17,33 @@ const CodexGuide = () => {
   };
 
   const configContent = `# ~/.codex/config.toml
-model = "gpt-4o"
-model_provider = "custom-proxy"
-
-[model_providers.custom-proxy]
-name = "Custom Proxy"
+model_provider = "Wong"
+model = "gpt-5.2"
+model_reasoning_effort = "high"
+disable_response_storage = true
+preferred_auth_method = "apikey"
+[model_providers.Wong]
+name = "Wong"
 base_url = "${siteAddress}/v1"
-env_key = "OPENAI_API_KEY"
-wire_api = "chat"`;
+wire_api = "responses"
+requires_openai_auth = true
+env_key = "WONG_API_KEY"`;
 
   const envCommands = {
     windows: {
-      temporary: `set OPENAI_API_KEY=your-api-key`,
-      permanent: `setx OPENAI_API_KEY "your-api-key"`,
+      temporary: `set WONG_API_KEY=your-api-key`,
+      permanent: `setx WONG_API_KEY "your-api-key"`,
     },
     macos: {
-      temporary: `export OPENAI_API_KEY=your-api-key`,
+      temporary: `export WONG_API_KEY=your-api-key`,
       permanent: `# 添加到 ~/.zshrc 或 ~/.bash_profile
-echo 'export OPENAI_API_KEY=your-api-key' >> ~/.zshrc
+echo 'export WONG_API_KEY=your-api-key' >> ~/.zshrc
 source ~/.zshrc`,
     },
     linux: {
-      temporary: `export OPENAI_API_KEY=your-api-key`,
+      temporary: `export WONG_API_KEY=your-api-key`,
       permanent: `# 添加到 ~/.bashrc
-echo 'export OPENAI_API_KEY=your-api-key' >> ~/.bashrc
+echo 'export WONG_API_KEY=your-api-key' >> ~/.bashrc
 source ~/.bashrc`,
     },
   };
