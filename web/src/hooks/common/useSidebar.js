@@ -62,6 +62,7 @@ export const useSidebar = () => {
       channel: true,
       models: true,
       redemption: true,
+      invitation: true,
       user: true,
       setting: true,
     },
