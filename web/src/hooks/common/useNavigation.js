@@ -24,6 +24,7 @@ export const useNavigation = (t, docsLink, headerNavModules) => {
     // 默认配置，如果没有传入配置则显示所有模块
     const defaultModules = {
       home: true,
+      ldcStore: true,
       console: true,
       pricing: true,
       docs: true,
@@ -38,6 +39,12 @@ export const useNavigation = (t, docsLink, headerNavModules) => {
         text: t('首页'),
         itemKey: 'home',
         to: '/',
+      },
+      {
+        text: t('LDC商店'),
+        itemKey: 'ldcStore',
+        isExternal: true,
+        externalLink: 'https://store.wzw.pp.ua',
       },
       {
         text: t('控制台'),
@@ -76,6 +83,9 @@ export const useNavigation = (t, docsLink, headerNavModules) => {
         return typeof modules.pricing === 'object'
           ? modules.pricing.enabled
           : modules.pricing;
+      }
+      if (link.itemKey === 'ldcStore') {
+        return modules.ldcStore !== false;
       }
       return modules[link.itemKey] === true;
     });
