@@ -264,6 +264,11 @@ export default function SettingsSidebarModulesAdmin(props) {
         },
         { key: 'user', title: t('用户管理'), description: t('用户账户管理') },
         {
+          key: 'archived-user',
+          title: t('归档用户'),
+          description: t('不活跃用户清理与恢复'),
+        },
+        {
           key: 'setting',
           title: t('系统设置'),
           description: t('系统参数配置'),

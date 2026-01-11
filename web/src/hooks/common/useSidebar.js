@@ -64,6 +64,7 @@ export const useSidebar = () => {
       redemption: true,
       invitation: true,
       user: true,
+      'archived-user': true,
       setting: true,
     },
   };
