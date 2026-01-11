@@ -226,6 +226,19 @@ func SetApiRouter(router *gin.Engine) {
 			}
 		}
 
+		archivedUserRoute := apiRouter.Group("/archived-user")
+		archivedUserRoute.Use(middleware.AdminAuth())
+		{
+			archivedUserRoute.GET("/", controller.GetAllArchivedUsers)
+			archivedUserRoute.GET("/search", controller.SearchArchivedUsers)
+			archivedUserRoute.GET("/inactive/preview", controller.PreviewInactiveUsers)
+			archivedUserRoute.GET("/inactive", controller.GetInactiveUsers)
+			archivedUserRoute.POST("/inactive/cleanup", controller.CleanupInactiveUsers)
+			archivedUserRoute.GET("/:id", controller.GetArchivedUser)
+			archivedUserRoute.POST("/:id/restore", controller.RestoreArchivedUser)
+			archivedUserRoute.DELETE("/:id", controller.DeleteArchivedUser)
+		}
+
 		logRoute := apiRouter.Group("/log")
 		logRoute.GET("/", middleware.AdminAuth(), controller.GetAllLogs)
 		logRoute.DELETE("/", middleware.AdminAuth(), controller.DeleteHistoryLogs)

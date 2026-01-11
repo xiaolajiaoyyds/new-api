@@ -271,6 +271,7 @@ func migrateDB() error {
 		&FAQBoardPost{},
 		&Appeal{},
 		&InvitationCode{},
+		&ArchivedUser{},
 	)
 	if err != nil {
 		return err

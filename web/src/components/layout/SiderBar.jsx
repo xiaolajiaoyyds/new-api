@@ -38,6 +38,7 @@ const routerMap = {
   invitation: '/console/invitation',
   topup: '/console/topup',
   user: '/console/user',
+  'archived-user': '/console/archived-user',
   log: '/console/log',
   midjourney: '/console/midjourney',
   setting: '/console/setting',
@@ -174,6 +175,12 @@ const SiderBar = ({ onNavigate = () => {} }) => {
         text: t('用户管理'),
         itemKey: 'user',
         to: '/user',
+        className: isAdmin() ? '' : 'tableHiddle',
+      },
+      {
+        text: t('归档用户'),
+        itemKey: 'archived-user',
+        to: '/console/archived-user',
         className: isAdmin() ? '' : 'tableHiddle',
       },
       {

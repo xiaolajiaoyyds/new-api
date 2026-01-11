@@ -120,6 +120,10 @@ func WeChatAuth(c *gin.Context) {
 			user.DisplayName = "WeChat User"
 			user.Role = common.RoleCommonUser
 			user.Status = common.UserStatusEnabled
+			invCode := c.Query("invitation_code")
+			if invCode != "" {
+				user.InvitationCodeUsed = invCode
+			}
 
 			if err := user.Insert(0); err != nil {
 				// 用户创建失败，回滚邀请码

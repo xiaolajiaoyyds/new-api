@@ -49,8 +49,10 @@ type User struct {
 	LinuxDOAvatar    string         `json:"linux_do_avatar" gorm:"column:linux_do_avatar;type:varchar(512)"`
 	LinuxDOLevel     int            `json:"linux_do_level" gorm:"column:linux_do_level;type:int;default:0"`
 	Setting          string         `json:"setting" gorm:"type:text;column:setting"`
-	Remark           string         `json:"remark,omitempty" gorm:"type:varchar(255)" validate:"max=255"`
-	StripeCustomer   string         `json:"stripe_customer" gorm:"type:varchar(64);column:stripe_customer;index"`
+	Remark             string         `json:"remark,omitempty" gorm:"type:varchar(255)" validate:"max=255"`
+	StripeCustomer     string         `json:"stripe_customer" gorm:"type:varchar(64);column:stripe_customer;index"`
+	CreatedAt          int64          `json:"created_at" gorm:"bigint;index;autoCreateTime"`
+	InvitationCodeUsed string         `json:"invitation_code_used" gorm:"type:varchar(32);column:invitation_code_used;index"`
 }
 
 func (user *User) ToBaseUser() *UserBase {

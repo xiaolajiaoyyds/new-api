@@ -279,6 +279,9 @@ func LinuxdoOAuth(c *gin.Context) {
 				if affCode != nil {
 					inviterId, _ = model.GetUserIdByAffCode(affCode.(string))
 				}
+				if invCode, ok := session.Get("invitation_code").(string); ok && invCode != "" {
+					user.InvitationCodeUsed = invCode
+				}
 
 				if err := user.Insert(inviterId); err != nil {
 					// 用户创建失败，回滚邀请码

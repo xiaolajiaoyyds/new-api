@@ -35,6 +35,7 @@ import Channel from './pages/Channel';
 import Token from './pages/Token';
 import Redemption from './pages/Redemption';
 import Invitation from './pages/Invitation';
+import ArchivedUser from './pages/ArchivedUser';
 import TopUp from './pages/TopUp';
 import Log from './pages/Log';
 import Chat from './pages/Chat';
@@ -154,6 +155,14 @@ function App() {
           element={
             <AdminRoute>
               <User />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path='/console/archived-user'
+          element={
+            <AdminRoute>
+              <ArchivedUser />
             </AdminRoute>
           }
         />

@@ -177,6 +177,9 @@ func DiscordOAuth(c *gin.Context) {
 			} else {
 				user.DisplayName = "Discord User"
 			}
+			if invCode, ok := session.Get("invitation_code").(string); ok && invCode != "" {
+				user.InvitationCodeUsed = invCode
+			}
 			err := user.Insert(0)
 			if err != nil {
 				// 用户创建失败，回滚邀请码
