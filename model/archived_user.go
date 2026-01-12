@@ -77,7 +77,7 @@ func GetArchivedUserById(id int) (*ArchivedUser, error) {
 
 func FindArchivedUserByKeyword(keyword string) (*ArchivedUser, error) {
 	var user ArchivedUser
-	err := DB.Where("username = ? OR display_name = ? OR CAST(original_user_id AS CHAR) = ?", keyword, keyword, keyword).First(&user).Error
+	err := DB.Where("username = ? OR display_name = ? OR linux_do_username = ? OR CAST(original_user_id AS CHAR) = ?", keyword, keyword, keyword, keyword).First(&user).Error
 	return &user, err
 }
 
