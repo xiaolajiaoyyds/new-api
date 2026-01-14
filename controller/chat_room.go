@@ -151,6 +151,11 @@ func enrichChatMessage(msg *model.ChatMessage) {
 	}
 	msg.Quota = user.Quota
 	msg.UsedQuota = user.UsedQuota
+
+	// Get cached rank info
+	usageRank, balanceRank := model.GetUserRankFromCache(msg.UserId)
+	msg.UsageRank = usageRank
+	msg.BalanceRank = balanceRank
 }
 
 func enrichChatMessages(messages []model.ChatMessage) {
@@ -658,4 +663,80 @@ func broadcastAnnouncement(announcement string) {
 		return
 	}
 	service.GetChatRoomHub().Broadcast(payload)
+}
+
+type ChatRoomSettingDTO struct {
+	Enabled            bool     `json:"enabled"`
+	MessageLimit       int      `json:"message_limit"`
+	MaxMessageLength   int      `json:"max_message_length"`
+	Announcement       string   `json:"announcement"`
+	ImageEnabled       bool     `json:"image_enabled"`
+	ImageMaxBytes      int64    `json:"image_max_bytes"`
+	ImageCacheMaxBytes int64    `json:"image_cache_max_bytes"`
+	AntiHotlinkEnabled bool     `json:"anti_hotlink_enabled"`
+	AllowedReferers    []string `json:"allowed_referers"`
+}
+
+func GetChatRoomSetting(c *gin.Context) {
+	cfg := chat_room_setting.GetChatRoomSetting()
+	common.ApiSuccess(c, ChatRoomSettingDTO{
+		Enabled:            cfg.Enabled,
+		MessageLimit:       cfg.MessageLimit,
+		MaxMessageLength:   cfg.MaxMessageLength,
+		Announcement:       cfg.Announcement,
+		ImageEnabled:       cfg.ImageEnabled,
+		ImageMaxBytes:      cfg.ImageMaxBytes,
+		ImageCacheMaxBytes: cfg.ImageCacheMaxBytes,
+		AntiHotlinkEnabled: cfg.AntiHotlinkEnabled,
+		AllowedReferers:    cfg.AllowedReferers,
+	})
+}
+
+func UpdateChatRoomSetting(c *gin.Context) {
+	var req ChatRoomSettingDTO
+	if err := c.ShouldBindJSON(&req); err != nil {
+		common.ApiErrorMsg(c, "无效的请求参数")
+		return
+	}
+
+	cfg := chat_room_setting.GetChatRoomSetting()
+	oldAnnouncement := cfg.Announcement
+
+	cfg.Enabled = req.Enabled
+	cfg.MessageLimit = req.MessageLimit
+	cfg.MaxMessageLength = req.MaxMessageLength
+	cfg.Announcement = req.Announcement
+	cfg.ImageEnabled = req.ImageEnabled
+	cfg.ImageMaxBytes = req.ImageMaxBytes
+	cfg.ImageCacheMaxBytes = req.ImageCacheMaxBytes
+	cfg.AntiHotlinkEnabled = req.AntiHotlinkEnabled
+	cfg.AllowedReferers = req.AllowedReferers
+
+	options := map[string]string{
+		"chat_room_setting.enabled":               strconv.FormatBool(req.Enabled),
+		"chat_room_setting.message_limit":         strconv.Itoa(req.MessageLimit),
+		"chat_room_setting.max_message_length":    strconv.Itoa(req.MaxMessageLength),
+		"chat_room_setting.announcement":          req.Announcement,
+		"chat_room_setting.image_enabled":         strconv.FormatBool(req.ImageEnabled),
+		"chat_room_setting.image_max_bytes":       strconv.FormatInt(req.ImageMaxBytes, 10),
+		"chat_room_setting.image_cache_max_bytes": strconv.FormatInt(req.ImageCacheMaxBytes, 10),
+		"chat_room_setting.anti_hotlink_enabled":  strconv.FormatBool(req.AntiHotlinkEnabled),
+	}
+
+	// Handle allowed_referers as JSON array
+	referersJson, _ := json.Marshal(req.AllowedReferers)
+	options["chat_room_setting.allowed_referers"] = string(referersJson)
+
+	for key, value := range options {
+		if err := model.UpdateOption(key, value); err != nil {
+			common.ApiError(c, err)
+			return
+		}
+	}
+
+	if oldAnnouncement != req.Announcement {
+		broadcastAnnouncement(req.Announcement)
+	}
+
+	common.ApiSuccess(c, gin.H{"message": "聊天室设置已更新"})
 }
