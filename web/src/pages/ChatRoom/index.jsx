@@ -26,6 +26,7 @@ import { UserContext } from '../../context/User';
 import { useChatRoomSocket } from '../../hooks/chatRoom/useChatRoomSocket';
 import { ChatBubble, ImagePreview, FilePreview, UserAvatar } from './ChatComponents';
 import { API } from '../../helpers';
+import MarkdownRenderer from '../../components/common/markdown/MarkdownRenderer';
 
 const { Title, Text } = Typography;
 
@@ -344,7 +345,9 @@ const ChatRoomPage = () => {
           <div className="px-4 py-2 border-b border-semi-color-border bg-amber-50 dark:bg-amber-900/20">
             <div className="flex items-start gap-2">
               <Text type="warning" strong size="small">📢</Text>
-              <Text size="small" className="flex-1">{announcement}</Text>
+              <div className="flex-1 text-sm [&_p]:m-0 [&_p]:leading-relaxed">
+                <MarkdownRenderer content={announcement} />
+              </div>
             </div>
           </div>
         )}

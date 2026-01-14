@@ -165,8 +165,9 @@ export default function SettingsChatRoom() {
               placeholder={t('在此输入聊天室置顶公告内容，留空则不显示')}
               value={inputs.announcement}
               onChange={(v) => handleInputChange('announcement', v)}
-              autosize={{ minRows: 2, maxRows: 6 }}
+              autosize={{ minRows: 4, maxRows: 12 }}
               style={{ fontFamily: 'JetBrains Mono, Consolas' }}
+              extraText={t('支持 Markdown 和 HTML 格式')}
             />
 
             <Form.Slot label={t('启用图片功能')}>
