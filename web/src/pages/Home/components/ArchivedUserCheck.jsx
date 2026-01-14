@@ -21,12 +21,6 @@ const ArchivedUserCheck = () => {
 
   useEffect(() => {
     const fetchCurrentUser = async () => {
-      // 检查是否已登录
-      const userStr = localStorage.getItem('user');
-      if (!userStr) {
-        setCurrentUser(null);
-        return;
-      }
       try {
         const res = await API.get('/api/user/self');
         if (res.data.success) {
