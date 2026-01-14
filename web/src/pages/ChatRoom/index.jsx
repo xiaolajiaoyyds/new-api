@@ -19,17 +19,18 @@ For commercial licensing, please contact support@quantumnous.com
 
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Button, Card, Tag, Typography, Toast, TextArea, Spin } from '@douyinfe/semi-ui';
-import { IconImage, IconSend, IconRefresh } from '@douyinfe/semi-icons';
+import { IconImage, IconSend, IconRefresh, IconFile } from '@douyinfe/semi-icons';
 import { useTranslation } from 'react-i18next';
 import { StatusContext } from '../../context/Status';
 import { UserContext } from '../../context/User';
 import { useChatRoomSocket } from '../../hooks/chatRoom/useChatRoomSocket';
-import { ChatBubble, ImagePreview, UserAvatar } from './ChatComponents';
+import { ChatBubble, ImagePreview, FilePreview, UserAvatar } from './ChatComponents';
 import { API } from '../../helpers';
 
 const { Title, Text } = Typography;
 
 const CHAT_ROOM_HEIGHT = 'calc(100vh - 120px)';
+const MAX_DISPLAY_LENGTH = 500; // 超过500字转为文件
 
 const ChatRoomPage = () => {
   const { t } = useTranslation();
@@ -56,6 +57,7 @@ const ChatRoomPage = () => {
 
   const [draft, setDraft] = useState('');
   const [pendingImages, setPendingImages] = useState([]);
+  const [pendingFiles, setPendingFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
   const listRef = useRef(null);
   const bottomRef = useRef(null);
@@ -67,14 +69,15 @@ const ChatRoomPage = () => {
     const content = draft.trim();
     const hasContent = content.length > 0;
     const hasImages = pendingImages.length > 0;
+    const hasFiles = pendingFiles.length > 0;
     return (
       enabled &&
       connectionState === 'connected' &&
-      (hasContent || hasImages) &&
-      content.length <= maxMessageLength &&
+      (hasContent || hasImages || hasFiles) &&
+      content.length <= MAX_DISPLAY_LENGTH &&
       !uploading
     );
-  }, [draft, pendingImages, enabled, connectionState, maxMessageLength, uploading]);
+  }, [draft, pendingImages, pendingFiles, enabled, connectionState, uploading]);
 
   useEffect(() => {
     pendingImagesRef.current = pendingImages;
@@ -152,10 +155,32 @@ const ChatRoomPage = () => {
     }
   };
 
-  const handlePaste = useCallback((e) => {
+  const uploadTextFile = async (content) => {
+    const blob = new Blob([content], { type: 'text/plain' });
+    const formData = new FormData();
+    formData.append('file', blob, 'message.txt');
+
+    try {
+      const res = await API.post('/api/chat/files', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      if (res.data.success) {
+        return res.data.data;
+      } else {
+        Toast.error(res.data.message || t('上传失败'));
+        return null;
+      }
+    } catch (err) {
+      Toast.error(err.message || t('上传失败'));
+      return null;
+    }
+  };
+
+  const handlePaste = useCallback(async (e) => {
     const items = e.clipboardData?.items;
     if (!items) return;
 
+    // Check for images first
     for (const item of items) {
       if (item.type.startsWith('image/')) {
         e.preventDefault();
@@ -163,10 +188,28 @@ const ChatRoomPage = () => {
         if (file) {
           processImageFile(file);
         }
-        break;
+        return;
       }
     }
-  }, []);
+
+    // Check for text content
+    const text = e.clipboardData.getData('text');
+    if (text && text.length > MAX_DISPLAY_LENGTH) {
+      e.preventDefault();
+      Toast.info(t('内容超过500字，正在转换为文件...'));
+      setUploading(true);
+      const result = await uploadTextFile(text);
+      setUploading(false);
+      if (result) {
+        setPendingFiles(prev => [...prev, {
+          url: result.url,
+          name: t('长文本') + '.txt',
+          size: result.bytes,
+        }]);
+        Toast.success(t('已转换为文件附件'));
+      }
+    }
+  }, [t]);
 
   const handleFileSelect = (e) => {
     const files = e.target.files;
@@ -187,16 +230,26 @@ const ChatRoomPage = () => {
     });
   };
 
+  const removeFile = (index) => {
+    setPendingFiles(prev => {
+      const newFiles = [...prev];
+      newFiles.splice(index, 1);
+      return newFiles;
+    });
+  };
+
   const onSend = useCallback(() => {
     const content = draft.trim();
     const imageUrls = pendingImages.map(img => img.url);
+    const fileUrls = pendingFiles.map(f => f.url);
+    const allAttachments = [...imageUrls, ...fileUrls];
     const hasContent = content.length > 0;
-    const hasImages = imageUrls.length > 0;
+    const hasAttachments = allAttachments.length > 0;
 
-    if (!hasContent && !hasImages) return;
+    if (!hasContent && !hasAttachments) return;
 
-    if (content.length > maxMessageLength) {
-      Toast.error(t('消息过长'));
+    if (content.length > MAX_DISPLAY_LENGTH) {
+      Toast.error(t('消息过长，请粘贴后自动转为文件'));
       return;
     }
     if (connectionState !== 'connected') {
@@ -204,14 +257,15 @@ const ChatRoomPage = () => {
       return;
     }
 
-    sendMessage(content, imageUrls);
+    sendMessage(content, allAttachments);
     setDraft('');
     pendingImages.forEach(img => {
       if (img.preview) URL.revokeObjectURL(img.preview);
     });
     setPendingImages([]);
+    setPendingFiles([]);
     setAutoScroll(true);
-  }, [draft, pendingImages, maxMessageLength, connectionState, sendMessage, t]);
+  }, [draft, pendingImages, pendingFiles, connectionState, sendMessage, t]);
 
   const scrollToBottom = () => {
     if (bottomRef.current) {
@@ -335,14 +389,22 @@ const ChatRoomPage = () => {
         )}
 
         {/* Image Preview Area */}
-        {pendingImages.length > 0 && (
+        {(pendingImages.length > 0 || pendingFiles.length > 0) && (
           <div className="px-4 py-2 border-t border-semi-color-border bg-semi-color-bg-1">
             <div className="flex flex-wrap gap-2">
               {pendingImages.map((img, idx) => (
                 <ImagePreview
-                  key={idx}
+                  key={`img-${idx}`}
                   src={img.preview}
                   onClear={() => removeImage(idx)}
+                />
+              ))}
+              {pendingFiles.map((file, idx) => (
+                <FilePreview
+                  key={`file-${idx}`}
+                  name={file.name}
+                  size={file.size}
+                  onClear={() => removeFile(idx)}
                 />
               ))}
             </div>
@@ -371,10 +433,12 @@ const ChatRoomPage = () => {
               value={draft}
               onChange={(v) => setDraft(v)}
               onPaste={handlePaste}
-              placeholder={t('输入消息，Ctrl+V 粘贴图片')}
+              placeholder={t('输入消息（最多500字），超长内容粘贴自动转文件')}
               aria-label={t('输入消息')}
               autosize={{ minRows: 1, maxRows: 4 }}
               className="flex-1"
+              maxLength={MAX_DISPLAY_LENGTH}
+              showClear
               onKeyDown={(e) => {
                 if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
                   e.preventDefault();
@@ -394,10 +458,10 @@ const ChatRoomPage = () => {
           </div>
           <div className="mt-2 flex items-center justify-between">
             <Text type="tertiary" size="small">
-              {t('支持 Markdown、图片粘贴/上传')}
+              {t('支持 Markdown、图片粘贴/上传，超500字自动转文件')}
             </Text>
             <Text type="tertiary" size="small">
-              Ctrl/⌘ + Enter {t('发送')}
+              {draft.length}/{MAX_DISPLAY_LENGTH} | Ctrl/⌘ + Enter {t('发送')}
             </Text>
           </div>
         </div>

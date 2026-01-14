@@ -19,13 +19,14 @@ For commercial licensing, please contact support@quantumnous.com
 
 import React, { useMemo } from 'react';
 import { Avatar, Tag, Typography, Image } from '@douyinfe/semi-ui';
-import { IconUser } from '@douyinfe/semi-icons';
+import { IconUser, IconFile } from '@douyinfe/semi-icons';
 import { useTranslation } from 'react-i18next';
 import MarkdownRenderer from '../../components/common/markdown/MarkdownRenderer';
 
 const { Text } = Typography;
 
 const DEFAULT_AVATAR = '/avatar.png';
+const MAX_BUBBLE_HEIGHT = 300; // 气泡最大高度
 
 const imageUrlPattern = /\.(jpg|jpeg|png|gif|webp|bmp|svg)(\?.*)?$/i;
 
@@ -108,6 +109,55 @@ export const ImagePreview = ({ src, onClear }) => {
   );
 };
 
+export const FilePreview = ({ name, size, onClear }) => {
+  const formatSize = (bytes) => {
+    if (bytes >= 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    if (bytes >= 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return bytes + ' B';
+  };
+
+  return (
+    <div className="relative inline-flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg border border-semi-color-border mr-2 mb-2">
+      <IconFile className="text-blue-500" />
+      <div className="flex flex-col">
+        <Text size="small" className="max-w-32 truncate">{name}</Text>
+        <Text type="tertiary" size="small">{formatSize(size)}</Text>
+      </div>
+      <button
+        type="button"
+        onClick={onClear}
+        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center cursor-pointer text-xs shadow hover:bg-red-600 transition-colors border-none p-0"
+        aria-label="Remove file"
+      >
+        ×
+      </button>
+    </div>
+  );
+};
+
+export const FileAttachment = ({ url, isSelf }) => {
+  const { t } = useTranslation();
+
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      download
+      className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg mt-2 no-underline ${
+        isSelf
+          ? 'bg-blue-400/30 hover:bg-blue-400/50'
+          : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
+      }`}
+    >
+      <IconFile className={isSelf ? 'text-white' : 'text-blue-500'} />
+      <Text size="small" className={isSelf ? 'text-white' : ''}>
+        {t('点击下载文本文件')}
+      </Text>
+    </a>
+  );
+};
+
 export const MessageImages = ({ imageUrls = [], contentImageUrls = [] }) => {
   const allImages = useMemo(() => {
     const set = new Set([...imageUrls, ...contentImageUrls]);
@@ -185,6 +235,21 @@ export const ChatBubble = ({ message, isSelf, showUserInfo = true }) => {
   } = message;
 
   const contentImageUrls = useMemo(() => extractImageUrls(content), [content]);
+
+  // Separate txt files from images
+  const { imageOnlyUrls, txtFileUrls } = useMemo(() => {
+    const images = [];
+    const txtFiles = [];
+    (image_urls || []).forEach(url => {
+      if (url.endsWith('.txt')) {
+        txtFiles.push(url);
+      } else {
+        images.push(url);
+      }
+    });
+    return { imageOnlyUrls: images, txtFileUrls: txtFiles };
+  }, [image_urls]);
+
   const displayContent = useMemo(() => {
     if (!content) return '';
     let result = content;
@@ -195,7 +260,8 @@ export const ChatBubble = ({ message, isSelf, showUserInfo = true }) => {
   }, [content, contentImageUrls]);
 
   const hasContent = displayContent.length > 0;
-  const hasImages = (image_urls && image_urls.length > 0) || contentImageUrls.length > 0;
+  const hasImages = imageOnlyUrls.length > 0 || contentImageUrls.length > 0;
+  const hasFiles = txtFileUrls.length > 0;
   const hasRank = (usage_rank && usage_rank > 0) || (balance_rank && balance_rank > 0);
 
   return (
@@ -244,11 +310,12 @@ export const ChatBubble = ({ message, isSelf, showUserInfo = true }) => {
         )}
 
         <div
-          className={`px-3 py-2 rounded-2xl shadow-sm overflow-hidden ${
+          className={`px-3 py-2 rounded-2xl shadow-sm ${
             isSelf
               ? 'bg-blue-500 text-white rounded-tr-sm'
               : 'bg-white dark:bg-zinc-800 border border-semi-color-border rounded-tl-sm'
           }`}
+          style={{ maxHeight: MAX_BUBBLE_HEIGHT, overflowY: 'auto' }}
         >
           {hasContent && (
             <div className={isSelf ? '[&_*]:!text-white [&_a]:!text-blue-200' : ''}>
@@ -257,11 +324,18 @@ export const ChatBubble = ({ message, isSelf, showUserInfo = true }) => {
           )}
           {hasImages && (
             <MessageImages
-              imageUrls={image_urls || []}
+              imageUrls={imageOnlyUrls}
               contentImageUrls={contentImageUrls}
             />
           )}
-          {!hasContent && !hasImages && (
+          {hasFiles && (
+            <div className="flex flex-col gap-1">
+              {txtFileUrls.map((url, idx) => (
+                <FileAttachment key={idx} url={url} isSelf={isSelf} />
+              ))}
+            </div>
+          )}
+          {!hasContent && !hasImages && !hasFiles && (
             <Text type="tertiary" className={isSelf ? 'text-white/70' : ''}>
               {t('空消息')}
             </Text>

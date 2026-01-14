@@ -15,6 +15,7 @@ func SetChatRouter(router *gin.Engine) {
 		chatRouter.GET("/count", controller.GetChatRoomMessageCount)
 		chatRouter.GET("/ws", middleware.ChatWsAuth(), controller.ChatRoomWs)
 		chatRouter.POST("/images", middleware.UserAuth(), controller.UploadChatRoomImage)
+		chatRouter.POST("/files", middleware.UserAuth(), controller.UploadChatRoomTextFile)
 		chatRouter.GET("/images/:date/:name", controller.GetChatRoomImage)
 		chatRouter.POST("/announcement", middleware.AdminAuth(), controller.SetChatRoomAnnouncement)
 		chatRouter.GET("/setting", middleware.AdminAuth(), controller.GetChatRoomSetting)

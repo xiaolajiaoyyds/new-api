@@ -366,6 +366,79 @@ func UploadChatRoomImage(c *gin.Context) {
 	})
 }
 
+type chatRoomFileUploadResponse struct {
+	Url         string `json:"url"`
+	Bytes       int64  `json:"bytes"`
+	ContentType string `json:"content_type"`
+	FileName    string `json:"file_name"`
+}
+
+func UploadChatRoomTextFile(c *gin.Context) {
+	cfg := chat_room_setting.GetChatRoomSetting()
+	if !cfg.Enabled {
+		common.ApiErrorMsg(c, "聊天室已关闭")
+		return
+	}
+
+	// Max 1MB for text files
+	maxTextFileSize := int64(1 << 20)
+	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, maxTextFileSize+1024)
+
+	file, header, err := c.Request.FormFile("file")
+	if err != nil {
+		common.ApiErrorMsg(c, "请选择要上传的文件")
+		return
+	}
+	defer file.Close()
+
+	if header.Size > maxTextFileSize {
+		common.ApiErrorMsg(c, "文件大小不能超过 1MB")
+		return
+	}
+
+	// Read file content
+	content, err := io.ReadAll(file)
+	if err != nil {
+		common.ApiErrorMsg(c, "读取文件失败")
+		return
+	}
+
+	// Validate it's valid UTF-8 text
+	if !utf8.Valid(content) {
+		common.ApiErrorMsg(c, "文件内容必须是有效的文本")
+		return
+	}
+
+	dateDir := time.Now().Format("20060102")
+	dirPath := filepath.Join(cfg.ImageDir, dateDir)
+	if err := os.MkdirAll(dirPath, 0755); err != nil {
+		common.ApiErrorMsg(c, "创建目录失败")
+		return
+	}
+
+	randBytes := make([]byte, 16)
+	if _, err := rand.Read(randBytes); err != nil {
+		common.ApiErrorMsg(c, "生成文件名失败")
+		return
+	}
+	fileName := hex.EncodeToString(randBytes) + ".txt"
+	filePath := filepath.Join(dirPath, fileName)
+
+	if err := os.WriteFile(filePath, content, 0644); err != nil {
+		common.ApiErrorMsg(c, "保存文件失败")
+		return
+	}
+
+	fileUrl := fmt.Sprintf("/api/chat/images/%s/%s", dateDir, fileName)
+
+	common.ApiSuccess(c, chatRoomFileUploadResponse{
+		Url:         fileUrl,
+		Bytes:       int64(len(content)),
+		ContentType: "text/plain",
+		FileName:    fileName,
+	})
+}
+
 func GetChatRoomImage(c *gin.Context) {
 	cfg := chat_room_setting.GetChatRoomSetting()
 
@@ -431,6 +504,8 @@ func GetChatRoomImage(c *gin.Context) {
 		contentType = "image/gif"
 	case ".webp":
 		contentType = "image/webp"
+	case ".txt":
+		contentType = "text/plain; charset=utf-8"
 	}
 
 	c.Header("Content-Type", contentType)
