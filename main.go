@@ -96,6 +96,8 @@ func main() {
 	if common.IsMasterNode {
 		model.InitLeaderboardCache()
 		model.StartLeaderboardCacheScheduler()
+		model.InitUserRankCache()
+		model.StartUserRankCacheScheduler()
 	}
 
 	if os.Getenv("CHANNEL_UPDATE_FREQUENCY") != "" {

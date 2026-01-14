@@ -953,6 +953,7 @@ func RootUserExists() bool {
 }
 
 type LeaderboardUser struct {
+	Id              int    `json:"id" gorm:"column:id"`
 	DisplayName     string `json:"display_name"`
 	LinuxDOUsername string `json:"linux_do_username"`
 	LinuxDOAvatar   string `json:"linux_do_avatar"`
@@ -973,7 +974,7 @@ func isLeaderboardHiddenUser(username string) bool {
 func GetUsageLeaderboard(limit int) ([]LeaderboardUser, error) {
 	var users []LeaderboardUser
 	query := DB.Model(&User{}).
-		Select("display_name, linux_do_username, linux_do_avatar, linux_do_level, request_count, used_quota").
+		Select("id, display_name, linux_do_username, linux_do_avatar, linux_do_level, request_count, used_quota").
 		Where("status = ?", common.UserStatusEnabled).
 		Where("role != ?", common.RoleRootUser).
 		Where("used_quota > 0")
@@ -1023,6 +1024,7 @@ func GetUserRank(userId int) (int, *LeaderboardUser, error) {
 }
 
 type BalanceLeaderboardUser struct {
+	Id              int    `json:"id" gorm:"column:id"`
 	DisplayName     string `json:"display_name"`
 	LinuxDOUsername string `json:"linux_do_username"`
 	LinuxDOAvatar   string `json:"linux_do_avatar"`
@@ -1033,7 +1035,7 @@ type BalanceLeaderboardUser struct {
 func GetBalanceLeaderboard(limit int) ([]BalanceLeaderboardUser, error) {
 	var users []BalanceLeaderboardUser
 	query := DB.Model(&User{}).
-		Select("display_name, linux_do_username, linux_do_avatar, linux_do_level, quota").
+		Select("id, display_name, linux_do_username, linux_do_avatar, linux_do_level, quota").
 		Where("status = ?", common.UserStatusEnabled).
 		Where("role != ?", common.RoleRootUser).
 		Where("quota > 0")

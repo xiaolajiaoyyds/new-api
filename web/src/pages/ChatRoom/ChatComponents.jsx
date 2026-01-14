@@ -196,6 +196,7 @@ export const ChatBubble = ({ message, isSelf, showUserInfo = true }) => {
 
   const hasContent = displayContent.length > 0;
   const hasImages = (image_urls && image_urls.length > 0) || contentImageUrls.length > 0;
+  const hasRank = (usage_rank && usage_rank > 0) || (balance_rank && balance_rank > 0);
 
   return (
     <div className={`flex w-full mb-4 gap-2 ${isSelf ? 'flex-row-reverse' : 'flex-row'}`}>
@@ -226,10 +227,19 @@ export const ChatBubble = ({ message, isSelf, showUserInfo = true }) => {
         )}
 
         {isSelf && (
-          <div className="flex items-center gap-2 mb-1">
-            <Text type="tertiary" size="small" className="text-xs">
-              {formatTime(created_at)}
-            </Text>
+          <div className={`flex flex-col mb-1 items-end`}>
+            <div className="flex items-center gap-2">
+              <Text type="tertiary" size="small" className="text-xs">
+                {formatTime(created_at)}
+              </Text>
+            </div>
+            {hasRank && (
+              <UserInfoBadges
+                usageRank={usage_rank}
+                balanceRank={balance_rank}
+                compact={true}
+              />
+            )}
           </div>
         )}
 
