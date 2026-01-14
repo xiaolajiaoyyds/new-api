@@ -54,10 +54,10 @@ func CreateInvitationCode(c *gin.Context) {
 	if req.Count <= 0 {
 		req.Count = 1
 	}
-	if req.Count > 100 {
+	if req.Count > 1000 {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
-			"message": "一次最多生成 100 个邀请码",
+			"message": "一次最多生成 1000 个邀请码",
 		})
 		return
 	}

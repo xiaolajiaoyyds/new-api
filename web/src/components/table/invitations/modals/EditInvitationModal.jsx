@@ -225,12 +225,12 @@ const EditInvitationModal = (props) => {
                       field='count'
                       label={t('生成数量')}
                       min={1}
-                      max={100}
+                      max={1000}
                       rules={[
                         { required: true, message: t('请输入生成数量') },
                       ]}
                       style={{ width: '100%' }}
-                      extraText={t('最多一次生成 100 个')}
+                      extraText={t('最多一次生成 1000 个')}
                     />
                   </Col>
                 )}
