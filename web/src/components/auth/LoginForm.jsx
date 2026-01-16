@@ -892,6 +892,16 @@ const LoginForm = () => {
         {renderWeChatLoginModal()}
         {render2FAModal()}
 
+        {/* 登录提示信息 */}
+        <div className='mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg text-sm text-amber-800 dark:text-amber-200'>
+          <p className='mb-2'>
+            {t('未注册用户请通过LDC商店购买注册邀请码后填入再进行注册')}
+          </p>
+          <p>
+            {t('如果出现无法登录的情况请先清除cookie和缓存后再试，如果依然报错说明你未注册本站或账号已被清理。')}
+          </p>
+        </div>
+
         {turnstileEnabled && (
           <div className='flex justify-center mt-6'>
             <Turnstile
