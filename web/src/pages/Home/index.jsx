@@ -31,6 +31,7 @@ import BanListTab from './components/BanListTab';
 import FloatingStoreButton from './components/FloatingStoreButton';
 import FloatingChatButton from './components/FloatingChatButton';
 import ArchivedUserCheck from './components/ArchivedUserCheck';
+import ScrollingNotice from './components/ScrollingNotice';
 
 const Home = () => {
   const { t } = useTranslation();
@@ -69,6 +70,8 @@ const Home = () => {
 
       <div className='flex flex-col gap-6'>
         <ProjectCard />
+
+        <ScrollingNotice />
 
         <ArchivedUserCheck />
 
