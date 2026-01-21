@@ -77,7 +77,7 @@ func GetArchivedUserById(id int) (*ArchivedUser, error) {
 
 func FindArchivedUserByKeyword(keyword string) (*ArchivedUser, error) {
 	var user ArchivedUser
-	err := DB.Where("username = ? OR display_name = ? OR linux_do_username = ? OR CAST(original_user_id AS CHAR) = ?", keyword, keyword, keyword, keyword).First(&user).Error
+	err := DB.Where("username = ? OR display_name = ? OR linux_do_username = ? OR linux_do_id = ? OR CAST(original_user_id AS CHAR) = ?", keyword, keyword, keyword, keyword, keyword).First(&user).Error
 	return &user, err
 }
 
@@ -259,8 +259,8 @@ func RecoverQuotaToUser(currentUserId int, archivedId int) (int, error) {
 			return errors.New("归档用户不存在")
 		}
 
-		if currentUser.LinuxDOUsername == "" || currentUser.LinuxDOUsername != archivedUser.LinuxDOUsername {
-			return errors.New("LinuxDO 用户名不匹配，无法恢复额度")
+		if currentUser.LinuxDOId == "" || currentUser.LinuxDOId != archivedUser.LinuxDOId {
+			return errors.New("LinuxDO 账号不匹配，无法恢复额度")
 		}
 
 		if archivedUser.Quota <= 0 {
