@@ -757,30 +757,51 @@ const RegisterForm = () => {
         className='blur-ball blur-ball-teal'
         style={{ top: '50%', left: '-120px' }}
       />
-      <div className='w-full max-w-sm mt-[60px]'>
-        {showEmailRegister ||
-        !(
-          status.github_oauth ||
-          status.discord_oauth ||
-          status.oidc_enabled ||
-          status.wechat_login ||
-          status.linuxdo_oauth ||
-          status.telegram_oauth
-        )
-          ? renderEmailRegisterForm()
-          : renderOAuthOptions()}
-        {renderWeChatLoginModal()}
-
-        {turnstileEnabled && (
-          <div className='flex justify-center mt-6'>
-            <Turnstile
-              sitekey={turnstileSiteKey}
-              onVerify={(token) => {
-                setTurnstileToken(token);
-              }}
-            />
+      <div className='w-full max-w-4xl mt-[60px] flex flex-col lg:flex-row lg:items-start lg:gap-8'>
+        {/* 左侧提示信息 - 桌面端显示在左侧，移动端显示在上方 */}
+        <div className='w-full lg:w-80 lg:flex-shrink-0 mb-6 lg:mb-0 lg:sticky lg:top-[80px]'>
+          <div className='p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg text-sm text-amber-800 dark:text-amber-200'>
+            <div className='flex items-center gap-2 mb-3 font-medium'>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+              {t('温馨提示')}
+            </div>
+            <p className='mb-3'>
+              {t('未注册用户请通过LDC商店购买注册邀请码后填入再进行注册')}
+            </p>
+            <p>
+              {t('如果出现无法登录的情况请先清除cookie和缓存后再试，如果依然报错说明你未注册本站或账号已被清理。')}
+            </p>
           </div>
-        )}
+        </div>
+
+        {/* 右侧注册表单 */}
+        <div className='w-full max-w-sm mx-auto lg:mx-0'>
+          {showEmailRegister ||
+          !(
+            status.github_oauth ||
+            status.discord_oauth ||
+            status.oidc_enabled ||
+            status.wechat_login ||
+            status.linuxdo_oauth ||
+            status.telegram_oauth
+          )
+            ? renderEmailRegisterForm()
+            : renderOAuthOptions()}
+          {renderWeChatLoginModal()}
+
+          {turnstileEnabled && (
+            <div className='flex justify-center mt-6'>
+              <Turnstile
+                sitekey={turnstileSiteKey}
+                onVerify={(token) => {
+                  setTurnstileToken(token);
+                }}
+              />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
