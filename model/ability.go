@@ -33,7 +33,7 @@ func GetAllEnableAbilityWithChannels() ([]AbilityWithChannel, error) {
 	err := DB.Table("abilities").
 		Select("abilities.*, channels.type as channel_type").
 		Joins("left join channels on abilities.channel_id = channels.id").
-		Where("abilities.enabled = ?", true).
+		Where("abilities.enabled = ? AND channels.status = ?", true, common.ChannelStatusEnabled).
 		Scan(&abilities).Error
 	return abilities, err
 }
@@ -149,15 +149,23 @@ func (channel *Channel) AddAbilities(tx *gorm.DB) error {
 	abilitySet := make(map[string]struct{})
 	abilities := make([]Ability, 0, len(models_))
 	for _, model := range models_ {
+		model = strings.TrimSpace(model)
+		if model == "" {
+			continue
+		}
+		abilityModel := model
+		if channel.ModelNamePrefix != nil && *channel.ModelNamePrefix != "" {
+			abilityModel = *channel.ModelNamePrefix + "/" + model
+		}
 		for _, group := range groups_ {
-			key := group + "|" + model
+			key := group + "|" + abilityModel
 			if _, exists := abilitySet[key]; exists {
 				continue
 			}
 			abilitySet[key] = struct{}{}
 			ability := Ability{
 				Group:     group,
-				Model:     model,
+				Model:     abilityModel,
 				ChannelId: channel.Id,
 				Enabled:   channel.Status == common.ChannelStatusEnabled,
 				Priority:  channel.Priority,
@@ -221,15 +229,23 @@ func (channel *Channel) UpdateAbilities(tx *gorm.DB) error {
 	abilitySet := make(map[string]struct{})
 	abilities := make([]Ability, 0, len(models_))
 	for _, model := range models_ {
+		model = strings.TrimSpace(model)
+		if model == "" {
+			continue
+		}
+		abilityModel := model
+		if channel.ModelNamePrefix != nil && *channel.ModelNamePrefix != "" {
+			abilityModel = *channel.ModelNamePrefix + "/" + model
+		}
 		for _, group := range groups_ {
-			key := group + "|" + model
+			key := group + "|" + abilityModel
 			if _, exists := abilitySet[key]; exists {
 				continue
 			}
 			abilitySet[key] = struct{}{}
 			ability := Ability{
 				Group:     group,
-				Model:     model,
+				Model:     abilityModel,
 				ChannelId: channel.Id,
 				Enabled:   channel.Status == common.ChannelStatusEnabled,
 				Priority:  channel.Priority,

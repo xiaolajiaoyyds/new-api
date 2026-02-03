@@ -136,6 +136,7 @@ const EditChannelModal = (props) => {
     base_url: '',
     other: '',
     model_mapping: '',
+    model_name_prefix: '',
     status_code_mapping: '',
     models: [],
     auto_ban: 1,
@@ -2573,6 +2574,20 @@ const EditChannelModal = (props) => {
                       extraText={t(
                         '键为请求中的模型名称，值为要替换的模型名称',
                       )}
+                    />
+
+                    <Input
+                      field='model_name_prefix'
+                      label={t('模型名称前缀')}
+                      placeholder={t('例如: aws')}
+                      value={inputs.model_name_prefix || ''}
+                      onChange={(value) =>
+                        handleInputChange('model_name_prefix', value)
+                      }
+                      extraText={t(
+                        '可选，为该渠道的所有模型添加前缀，例如配置 "aws" 后，模型将显示为 "aws/gpt-4"，转发时自动剥离前缀',
+                      )}
+                      showClear
                     />
                   </Card>
                 </div>

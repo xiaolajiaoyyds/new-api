@@ -4,13 +4,24 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 
+	"github.com/QuantumNous/new-api/constant"
 	"github.com/QuantumNous/new-api/dto"
 	"github.com/QuantumNous/new-api/relay/common"
 	"github.com/gin-gonic/gin"
 )
 
 func ModelMappedHelper(c *gin.Context, info *common.RelayInfo, request dto.Request) error {
+	// Strip model name prefix if configured
+	if prefix := c.GetString(string(constant.ContextKeyChannelModelNamePrefix)); prefix != "" {
+		prefixWithSlash := prefix + "/"
+		if strings.HasPrefix(info.OriginModelName, prefixWithSlash) {
+			info.OriginModelName = strings.TrimPrefix(info.OriginModelName, prefixWithSlash)
+			info.UpstreamModelName = info.OriginModelName
+		}
+	}
+
 	// map model name
 	modelMapping := c.GetString("model_mapping")
 	if modelMapping != "" && modelMapping != "{}" {
