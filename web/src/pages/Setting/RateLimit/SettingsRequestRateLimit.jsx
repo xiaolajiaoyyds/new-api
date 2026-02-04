@@ -94,10 +94,13 @@ export default function RequestRateLimit(props) {
   );
 
   const handleUserSelect = (value, option) => {
-    if (value && option?.user) {
-      const user = option.user;
-      if (!whitelistUsers.some((u) => u.id === user.id)) {
-        setWhitelistUsers([...whitelistUsers, { id: user.id, username: user.username }]);
+    if (value) {
+      const selectedOption = searchResults.find(opt => opt.value === value);
+      if (selectedOption?.user) {
+        const user = selectedOption.user;
+        if (!whitelistUsers.some((u) => u.id === user.id)) {
+          setWhitelistUsers([...whitelistUsers, { id: user.id, username: user.username }]);
+        }
       }
     }
     setSearchResults([]);
