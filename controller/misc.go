@@ -10,6 +10,7 @@ import (
 	"github.com/QuantumNous/new-api/constant"
 	"github.com/QuantumNous/new-api/middleware"
 	"github.com/QuantumNous/new-api/model"
+	"github.com/QuantumNous/new-api/oauth"
 	"github.com/QuantumNous/new-api/setting"
 	"github.com/QuantumNous/new-api/setting/chat_room_setting"
 	"github.com/QuantumNous/new-api/setting/console_setting"
@@ -121,6 +122,9 @@ func GetStatus(c *gin.Context) {
 		"user_agreement_enabled":      legalSetting.UserAgreement != "",
 		"privacy_policy_enabled":      legalSetting.PrivacyPolicy != "",
 		"invitation_code_required":    common.InvitationCodeRequired,
+		"checkin_enabled":             operation_setting.GetCheckinSetting().Enabled,
+		"checkin_dashboard_enabled":   common.CheckinDashboardEnabled,
+		"_qn":                         "new-api",
 	}
 
 	// 根据启用状态注入可选内容
@@ -132,6 +136,30 @@ func GetStatus(c *gin.Context) {
 	}
 	if cs.FAQEnabled {
 		data["faq"] = console_setting.GetFAQ()
+	}
+
+	// Add enabled custom OAuth providers
+	customProviders := oauth.GetEnabledCustomProviders()
+	if len(customProviders) > 0 {
+		type CustomOAuthInfo struct {
+			Name                  string `json:"name"`
+			Slug                  string `json:"slug"`
+			ClientId              string `json:"client_id"`
+			AuthorizationEndpoint string `json:"authorization_endpoint"`
+			Scopes                string `json:"scopes"`
+		}
+		providersInfo := make([]CustomOAuthInfo, 0, len(customProviders))
+		for _, p := range customProviders {
+			config := p.GetConfig()
+			providersInfo = append(providersInfo, CustomOAuthInfo{
+				Name:                  config.Name,
+				Slug:                  config.Slug,
+				ClientId:              config.ClientId,
+				AuthorizationEndpoint: config.AuthorizationEndpoint,
+				Scopes:                config.Scopes,
+			})
+		}
+		data["custom_oauth_providers"] = providersInfo
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -160,6 +188,17 @@ func GetAbout(c *gin.Context) {
 		"success": true,
 		"message": "",
 		"data":    common.OptionMap["About"],
+	})
+	return
+}
+
+func GetIntro(c *gin.Context) {
+	common.OptionMapRWMutex.RLock()
+	defer common.OptionMapRWMutex.RUnlock()
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "",
+		"data":    common.OptionMap["Intro"],
 	})
 	return
 }

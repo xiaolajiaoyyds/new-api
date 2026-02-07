@@ -25,10 +25,8 @@ import { useTranslation } from 'react-i18next';
 import NoticeModal from '../../components/layout/NoticeModal';
 import TutorialTab from './components/TutorialTab';
 import LeaderboardTab from './components/LeaderboardTab';
-import ProjectCard from './components/ProjectCard';
 import FAQTab from './components/FAQTab';
 import BanListTab from './components/BanListTab';
-import FloatingStoreButton from './components/FloatingStoreButton';
 import FloatingChatButton from './components/FloatingChatButton';
 import ArchivedUserCheck from './components/ArchivedUserCheck';
 import ScrollingNotice from './components/ScrollingNotice';
@@ -60,7 +58,6 @@ const Home = () => {
 
   return (
     <div className='w-full max-w-7xl mx-auto px-4 py-8 mt-16'>
-      <FloatingStoreButton />
       <FloatingChatButton />
       <NoticeModal
         visible={noticeVisible}
@@ -69,8 +66,6 @@ const Home = () => {
       />
 
       <div className='flex flex-col gap-6'>
-        <ProjectCard />
-
         <ScrollingNotice />
 
         <ArchivedUserCheck />

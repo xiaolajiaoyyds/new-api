@@ -97,6 +97,14 @@ const TopUp = () => {
   });
   const [checkInLoading, setCheckInLoading] = useState(false);
 
+  // 订阅相关
+  const [subscriptionPlans, setSubscriptionPlans] = useState([]);
+  const [subscriptionLoading, setSubscriptionLoading] = useState(true);
+  const [billingPreference, setBillingPreference] =
+    useState('subscription_first');
+  const [activeSubscriptions, setActiveSubscriptions] = useState([]);
+  const [allSubscriptions, setAllSubscriptions] = useState([]);
+
   // 预设充值额度选项
   const [presetAmounts, setPresetAmounts] = useState([]);
   const [selectedPreset, setSelectedPreset] = useState(null);
@@ -250,7 +258,9 @@ const TopUp = () => {
             document.body.removeChild(form);
           }
         } else {
-          showError(data);
+          const errorMsg =
+            typeof data === 'string' ? data : message || t('支付失败');
+          showError(errorMsg);
         }
       } else {
         showError(res);
@@ -294,7 +304,9 @@ const TopUp = () => {
         if (message === 'success') {
           processCreemCallback(data);
         } else {
-          showError(data);
+          const errorMsg =
+            typeof data === 'string' ? data : message || t('支付失败');
+          showError(errorMsg);
         }
       } else {
         showError(res);
@@ -320,6 +332,61 @@ const TopUp = () => {
       userDispatch({ type: 'login', payload: data });
     } else {
       showError(message);
+    }
+  };
+
+  const getSubscriptionPlans = async () => {
+    setSubscriptionLoading(true);
+    try {
+      const res = await API.get('/api/subscription/plans');
+      if (res.data?.success) {
+        setSubscriptionPlans(res.data.data || []);
+      }
+    } catch (e) {
+      setSubscriptionPlans([]);
+    } finally {
+      setSubscriptionLoading(false);
+    }
+  };
+
+  const getSubscriptionSelf = async () => {
+    try {
+      const res = await API.get('/api/subscription/self');
+      if (res.data?.success) {
+        setBillingPreference(
+          res.data.data?.billing_preference || 'subscription_first',
+        );
+        // Active subscriptions
+        const activeSubs = res.data.data?.subscriptions || [];
+        setActiveSubscriptions(activeSubs);
+        // All subscriptions (including expired)
+        const allSubs = res.data.data?.all_subscriptions || [];
+        setAllSubscriptions(allSubs);
+      }
+    } catch (e) {
+      // ignore
+    }
+  };
+
+  const updateBillingPreference = async (pref) => {
+    const previousPref = billingPreference;
+    setBillingPreference(pref);
+    try {
+      const res = await API.put('/api/subscription/self/preference', {
+        billing_preference: pref,
+      });
+      if (res.data?.success) {
+        showSuccess(t('更新成功'));
+        const normalizedPref =
+          res.data?.data?.billing_preference || pref || previousPref;
+        setBillingPreference(normalizedPref);
+      } else {
+        showError(res.data?.message || t('更新失败'));
+        setBillingPreference(previousPref);
+      }
+    } catch (e) {
+      showError(t('请求失败'));
+      setBillingPreference(previousPref);
     }
   };
 
@@ -455,7 +522,13 @@ const TopUp = () => {
       const res = await API.get('/api/user/checkin');
       const { success, data } = res.data;
       if (success) {
-        setCheckInStatus(data);
+        // 适配后端返回的数据结构
+        setCheckInStatus({
+          enabled: data.enabled,
+          min_quota: data.min_quota,
+          max_quota: data.max_quota,
+          checked_in: data.stats?.checked_in_today || false,
+        });
       }
     } catch (error) {
       console.error('获取签到状态失败:', error);
@@ -476,11 +549,11 @@ const TopUp = () => {
         setCheckInStatus((prev) => ({
           ...prev,
           checked_in: true,
-          quota: data.quota,
+          quota: data.quota_awarded,
         }));
         Modal.success({
           title: t('签到成功！'),
-          content: t('恭喜获得额度：') + renderQuota(data.quota),
+          content: t('恭喜获得额度：') + renderQuota(data.quota_awarded),
           centered: true,
         });
         getUserQuota();
@@ -520,9 +593,8 @@ const TopUp = () => {
   };
 
   useEffect(() => {
-    if (!userState?.user?.id) {
-      getUserQuota().then();
-    }
+    // 始终获取最新用户数据，确保余额等统计信息准确
+    getUserQuota().then();
     setTransferAmount(getQuotaPerUnit());
   }, []);
 
@@ -536,6 +608,8 @@ const TopUp = () => {
   useEffect(() => {
     getTopupInfo().then();
     getCheckInStatus();
+    getSubscriptionPlans().then();
+    getSubscriptionSelf().then();
   }, [getCheckInStatus]);
 
   useEffect(() => {
@@ -708,7 +782,8 @@ const TopUp = () => {
               {t('产品名称')}：{selectedCreemProduct.name}
             </p>
             <p>
-              {t('价格')}：{selectedCreemProduct.currency === 'EUR' ? '€' : '$'}{selectedCreemProduct.price}
+              {t('价格')}：{selectedCreemProduct.currency === 'EUR' ? '€' : '$'}
+              {selectedCreemProduct.price}
             </p>
             <p>
               {t('充值额度')}：{selectedCreemProduct.quota}
@@ -761,6 +836,13 @@ const TopUp = () => {
               checkInStatus={checkInStatus}
               checkInLoading={checkInLoading}
               doCheckIn={doCheckIn}
+              subscriptionLoading={subscriptionLoading}
+              subscriptionPlans={subscriptionPlans}
+              billingPreference={billingPreference}
+              onChangeBillingPreference={updateBillingPreference}
+              activeSubscriptions={activeSubscriptions}
+              allSubscriptions={allSubscriptions}
+              reloadSubscriptionSelf={getSubscriptionSelf}
             />
           </div>
 

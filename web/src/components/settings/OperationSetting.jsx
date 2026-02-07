@@ -28,6 +28,7 @@ import SettingsMonitoring from '../../pages/Setting/Operation/SettingsMonitoring
 import SettingsCreditLimit from '../../pages/Setting/Operation/SettingsCreditLimit';
 import SettingsLeaderboard from '../../pages/Setting/Operation/SettingsLeaderboard';
 import SettingsAppeals from '../../pages/Setting/Operation/SettingsAppeals';
+import SettingsCheckin from '../../pages/Setting/Operation/SettingsCheckin';
 import { API, showError, toBoolean } from '../../helpers';
 
 const OperationSetting = () => {
@@ -76,11 +77,17 @@ const OperationSetting = () => {
     AutomaticDisableChannelEnabled: false,
     AutomaticEnableChannelEnabled: false,
     AutomaticDisableKeywords: '',
+    AutomaticDisableStatusCodes: '401',
+    AutomaticRetryStatusCodes:
+      '100-199,300-399,401-407,409-499,500-503,505-523,525-599',
     'monitor_setting.auto_test_channel_enabled': false,
     'monitor_setting.auto_test_channel_minutes': 10,
 
     /* 榜单设置 */
     LeaderboardHiddenUsers: '',
+
+    /* 令牌设置 */
+    'token_setting.max_user_tokens': 1000,
   });
 
   let [loading, setLoading] = useState(false);
@@ -160,6 +167,10 @@ const OperationSetting = () => {
         <div style={{ marginTop: '10px' }}>
           <SettingsAppeals />
         </div>
+        {/* 签到设置 */}
+        <Card style={{ marginTop: '10px' }}>
+          <SettingsCheckin options={inputs} refresh={onRefresh} />
+        </Card>
       </Spin>
     </>
   );

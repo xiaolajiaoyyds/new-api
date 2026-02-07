@@ -9,6 +9,7 @@ import (
 	"github.com/QuantumNous/new-api/setting"
 	"github.com/QuantumNous/new-api/setting/config"
 	"github.com/QuantumNous/new-api/setting/operation_setting"
+	"github.com/QuantumNous/new-api/setting/performance_setting"
 	"github.com/QuantumNous/new-api/setting/ratio_setting"
 	"github.com/QuantumNous/new-api/setting/system_setting"
 )
@@ -65,6 +66,7 @@ func InitOptionMap() {
 	common.OptionMap["SMTPSSLEnabled"] = strconv.FormatBool(common.SMTPSSLEnabled)
 	common.OptionMap["Notice"] = ""
 	common.OptionMap["About"] = ""
+	common.OptionMap["Intro"] = ""
 	common.OptionMap["HomePageContent"] = ""
 	common.OptionMap["Footer"] = common.Footer
 	common.OptionMap["SystemName"] = common.SystemName
@@ -117,6 +119,7 @@ func InitOptionMap() {
 	common.OptionMap["ModelRatio"] = ratio_setting.ModelRatio2JSONString()
 	common.OptionMap["ModelPrice"] = ratio_setting.ModelPrice2JSONString()
 	common.OptionMap["CacheRatio"] = ratio_setting.CacheRatio2JSONString()
+	common.OptionMap["CreateCacheRatio"] = ratio_setting.CreateCacheRatio2JSONString()
 	common.OptionMap["GroupRatio"] = ratio_setting.GroupRatio2JSONString()
 	common.OptionMap["GroupGroupRatio"] = ratio_setting.GroupGroupRatio2JSONString()
 	common.OptionMap["UserUsableGroups"] = setting.UserUsableGroups2JSONString()
@@ -132,6 +135,7 @@ func InitOptionMap() {
 	common.OptionMap["DataExportInterval"] = strconv.Itoa(common.DataExportInterval)
 	common.OptionMap["DataExportDefaultTime"] = common.DataExportDefaultTime
 	common.OptionMap["DefaultCollapseSidebar"] = strconv.FormatBool(common.DefaultCollapseSidebar)
+	common.OptionMap["CheckinDashboardEnabled"] = strconv.FormatBool(common.CheckinDashboardEnabled)
 	common.OptionMap["MjNotifyEnabled"] = strconv.FormatBool(setting.MjNotifyEnabled)
 	common.OptionMap["MjAccountFilterEnabled"] = strconv.FormatBool(setting.MjAccountFilterEnabled)
 	common.OptionMap["MjModeClearEnabled"] = strconv.FormatBool(setting.MjModeClearEnabled)
@@ -146,6 +150,8 @@ func InitOptionMap() {
 	common.OptionMap["SensitiveWords"] = setting.SensitiveWordsToString()
 	common.OptionMap["StreamCacheQueueLength"] = strconv.Itoa(setting.StreamCacheQueueLength)
 	common.OptionMap["AutomaticDisableKeywords"] = operation_setting.AutomaticDisableKeywordsToString()
+	common.OptionMap["AutomaticDisableStatusCodes"] = operation_setting.AutomaticDisableStatusCodesToString()
+	common.OptionMap["AutomaticRetryStatusCodes"] = operation_setting.AutomaticRetryStatusCodesToString()
 	common.OptionMap["ExposeRatioEnabled"] = strconv.FormatBool(ratio_setting.IsExposeRatioEnabled())
 
 	// 自动添加所有注册的模型配置
@@ -269,6 +275,8 @@ func updateOptionMap(key string, value string) (err error) {
 			common.DataExportEnabled = boolValue
 		case "DefaultCollapseSidebar":
 			common.DefaultCollapseSidebar = boolValue
+		case "CheckinDashboardEnabled":
+			common.CheckinDashboardEnabled = boolValue
 		case "MjNotifyEnabled":
 			setting.MjNotifyEnabled = boolValue
 		case "MjAccountFilterEnabled":
@@ -437,6 +445,8 @@ func updateOptionMap(key string, value string) (err error) {
 		err = ratio_setting.UpdateModelPriceByJSONString(value)
 	case "CacheRatio":
 		err = ratio_setting.UpdateCacheRatioByJSONString(value)
+	case "CreateCacheRatio":
+		err = ratio_setting.UpdateCreateCacheRatioByJSONString(value)
 	case "ImageRatio":
 		err = ratio_setting.UpdateImageRatioByJSONString(value)
 	case "AudioRatio":
@@ -457,6 +467,10 @@ func updateOptionMap(key string, value string) (err error) {
 		setting.SensitiveWordsFromString(value)
 	case "AutomaticDisableKeywords":
 		operation_setting.AutomaticDisableKeywordsFromString(value)
+	case "AutomaticDisableStatusCodes":
+		err = operation_setting.AutomaticDisableStatusCodesFromString(value)
+	case "AutomaticRetryStatusCodes":
+		err = operation_setting.AutomaticRetryStatusCodesFromString(value)
 	case "StreamCacheQueueLength":
 		setting.StreamCacheQueueLength, _ = strconv.Atoi(value)
 	case "PayMethods":
@@ -486,6 +500,12 @@ func handleConfigUpdate(key, value string) bool {
 		configKey: value,
 	}
 	config.UpdateConfigFromMap(cfg, configMap)
+
+	// 特定配置的后处理
+	if configName == "performance_setting" {
+		// 同步磁盘缓存配置到 common 包
+		performance_setting.UpdateAndSync()
+	}
 
 	return true // 已处理
 }

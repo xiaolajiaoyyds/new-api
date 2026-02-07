@@ -29,6 +29,7 @@ import ApiInfoPanel from './ApiInfoPanel';
 import AnnouncementsPanel from './AnnouncementsPanel';
 import FaqPanel from './FaqPanel';
 import UptimePanel from './UptimePanel';
+import CheckinHeatmapPanel from './CheckinHeatmapPanel';
 import SearchModal from './modals/SearchModal';
 
 import { useDashboardData } from '../../hooks/dashboard/useDashboardData';
@@ -203,8 +204,8 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* 系统公告和常见问答卡片 */}
-      {dashboardData.hasInfoPanels && (
+      {/* 系统公告、常见问答和签到日历卡片 */}
+      {(dashboardData.hasInfoPanels || dashboardData.checkinDashboardEnabled) && (
         <div className='mb-4'>
           <div className='grid grid-cols-1 lg:grid-cols-4 gap-4'>
             {/* 公告卡片 */}
@@ -258,6 +259,17 @@ const Dashboard = () => {
                 }
                 CARD_PROPS={CARD_PROPS}
                 ILLUSTRATION_SIZE={ILLUSTRATION_SIZE}
+                t={dashboardData.t}
+              />
+            )}
+
+            {/* 签到日历卡片 */}
+            {dashboardData.checkinDashboardEnabled && (
+              <CheckinHeatmapPanel
+                status={statusState?.status}
+                turnstileEnabled={statusState?.status?.turnstile_check}
+                turnstileSiteKey={statusState?.status?.turnstile_site_key}
+                CARD_PROPS={CARD_PROPS}
                 t={dashboardData.t}
               />
             )}

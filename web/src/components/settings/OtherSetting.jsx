@@ -47,6 +47,7 @@ const OtherSetting = () => {
     Logo: '',
     Footer: '',
     About: '',
+    Intro: '',
     HomePageContent: '',
   });
   let [loading, setLoading] = useState(false);
@@ -80,6 +81,7 @@ const OtherSetting = () => {
     Logo: false,
     HomePageContent: false,
     About: false,
+    Intro: false,
     Footer: false,
     CheckUpdate: false,
   });
@@ -212,6 +214,19 @@ const OtherSetting = () => {
       showError('关于内容更新失败');
     } finally {
       setLoadingInput((loadingInput) => ({ ...loadingInput, About: false }));
+    }
+  };
+  // 个性化设置 - 测速
+  const submitIntro = async () => {
+    try {
+      setLoadingInput((loadingInput) => ({ ...loadingInput, Intro: true }));
+      await updateOption('Intro', inputs.Intro);
+      showSuccess('测速内容已更新');
+    } catch (error) {
+      console.error('测速内容更新失败', error);
+      showError('测速内容更新失败');
+    } finally {
+      setLoadingInput((loadingInput) => ({ ...loadingInput, Intro: false }));
     }
   };
   // 个性化设置 - 页脚
@@ -378,13 +393,15 @@ const OtherSetting = () => {
               <Form.TextArea
                 label={t('用户协议')}
                 placeholder={t(
-              '在此输入用户协议内容，支持 Markdown & HTML 代码',
+                  '在此输入用户协议内容，支持 Markdown & HTML 代码',
                 )}
                 field={LEGAL_USER_AGREEMENT_KEY}
                 onChange={handleInputChange}
                 style={{ fontFamily: 'JetBrains Mono, Consolas' }}
                 autosize={{ minRows: 6, maxRows: 12 }}
-                helpText={t('填写用户协议内容后，用户注册时将被要求勾选已阅读用户协议')}
+                helpText={t(
+                  '填写用户协议内容后，用户注册时将被要求勾选已阅读用户协议',
+                )}
               />
               <Button
                 onClick={submitUserAgreement}
@@ -401,7 +418,9 @@ const OtherSetting = () => {
                 onChange={handleInputChange}
                 style={{ fontFamily: 'JetBrains Mono, Consolas' }}
                 autosize={{ minRows: 6, maxRows: 12 }}
-                helpText={t('填写隐私政策内容后，用户注册时将被要求勾选已阅读隐私政策')}
+                helpText={t(
+                  '填写隐私政策内容后，用户注册时将被要求勾选已阅读隐私政策',
+                )}
               />
               <Button
                 onClick={submitPrivacyPolicy}
@@ -468,6 +487,19 @@ const OtherSetting = () => {
               />
               <Button onClick={submitAbout} loading={loadingInput['About']}>
                 {t('设置关于')}
+              </Button>
+              <Form.TextArea
+                label={t('测速')}
+                placeholder={t(
+                  '在此输入新的测速内容，支持 Markdown & HTML 代码。如果输入的是一个链接，则会使用该链接作为 iframe 的 src 属性，这允许你设置任意网页作为测速页面',
+                )}
+                field={'Intro'}
+                onChange={handleInputChange}
+                style={{ fontFamily: 'JetBrains Mono, Consolas' }}
+                autosize={{ minRows: 6, maxRows: 12 }}
+              />
+              <Button onClick={submitIntro} loading={loadingInput['Intro']}>
+                {t('设置测速')}
               </Button>
               {/*  */}
               <Banner

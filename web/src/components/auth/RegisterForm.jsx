@@ -17,7 +17,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   API,
@@ -31,7 +31,15 @@ import {
   onDiscordOAuthClicked,
 } from '../../helpers';
 import Turnstile from 'react-turnstile';
-import { Button, Card, Checkbox, Divider, Form, Icon, Modal } from '@douyinfe/semi-ui';
+import {
+  Button,
+  Card,
+  Checkbox,
+  Divider,
+  Form,
+  Icon,
+  Modal,
+} from '@douyinfe/semi-ui';
 import Title from '@douyinfe/semi-ui/lib/es/typography/title';
 import Text from '@douyinfe/semi-ui/lib/es/typography/text';
 import {
@@ -58,6 +66,11 @@ import { SiDiscord } from 'react-icons/si';
 const RegisterForm = () => {
   let navigate = useNavigate();
   const { t } = useTranslation();
+  const githubButtonTextKeyByState = {
+    idle: '使用 GitHub 继续',
+    redirecting: '正在跳转 GitHub...',
+    timeout: '请求超时，请刷新页面后重新发起 GitHub 登录',
+  };
   const [inputs, setInputs] = useState({
     username: '',
     password: '',
@@ -91,9 +104,10 @@ const RegisterForm = () => {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [hasUserAgreement, setHasUserAgreement] = useState(false);
   const [hasPrivacyPolicy, setHasPrivacyPolicy] = useState(false);
-  const [githubButtonText, setGithubButtonText] = useState('使用 GitHub 继续');
+  const [githubButtonState, setGithubButtonState] = useState('idle');
   const [githubButtonDisabled, setGithubButtonDisabled] = useState(false);
   const githubTimeoutRef = useRef(null);
+  const githubButtonText = t(githubButtonTextKeyByState[githubButtonState]);
 
   const logo = getLogo();
   const systemName = getSystemName();
@@ -103,33 +117,33 @@ const RegisterForm = () => {
     localStorage.setItem('aff', affCode);
   }
 
-  // 优先使用 Context 中的实时状态，回退到 localStorage
-  const status = statusState?.status || (() => {
+  const status = useMemo(() => {
+    if (statusState?.status) return statusState.status;
     const savedStatus = localStorage.getItem('status');
-    return savedStatus ? JSON.parse(savedStatus) : {};
-  })();
+    if (!savedStatus) return {};
+    try {
+      return JSON.parse(savedStatus) || {};
+    } catch (err) {
+      return {};
+    }
+  }, [statusState?.status]);
 
-  const [showEmailVerification, setShowEmailVerification] = useState(() => {
-    return status.email_verification ?? false;
-  });
-  const [invitationCodeRequired, setInvitationCodeRequired] = useState(
-    status.invitation_code_required || false
-  );
+  const [showEmailVerification, setShowEmailVerification] = useState(false);
+  const [invitationCodeRequired, setInvitationCodeRequired] = useState(false);
 
   useEffect(() => {
-    const currentStatus = statusState?.status || status;
-    setShowEmailVerification(currentStatus.email_verification);
-    if (currentStatus.turnstile_check) {
+    setShowEmailVerification(!!status?.email_verification);
+    if (status?.turnstile_check) {
       setTurnstileEnabled(true);
       setTurnstileSiteKey(currentStatus.turnstile_site_key);
     }
 
     // 从 status 获取用户协议和隐私政策的启用状态
-    setHasUserAgreement(currentStatus.user_agreement_enabled || false);
-    setHasPrivacyPolicy(currentStatus.privacy_policy_enabled || false);
+    setHasUserAgreement(status?.user_agreement_enabled || false);
+    setHasPrivacyPolicy(status?.privacy_policy_enabled || false);
     // 从 status 获取邀请码是否必填
-    setInvitationCodeRequired(currentStatus.invitation_code_required || false);
-  }, [statusState?.status, status]);
+    setInvitationCodeRequired(status?.invitation_code_required || false);
+  }, [status]);
 
   useEffect(() => {
     let countdownInterval = null;
@@ -239,7 +253,7 @@ const RegisterForm = () => {
     setVerificationCodeLoading(true);
     try {
       const res = await API.get(
-        `/api/verification?email=${inputs.email}&turnstile=${turnstileToken}`,
+        `/api/verification?email=${encodeURIComponent(inputs.email)}&turnstile=${turnstileToken}`,
       );
       const { success, message } = res.data;
       if (success) {
@@ -265,17 +279,17 @@ const RegisterForm = () => {
     }
     setGithubLoading(true);
     setGithubButtonDisabled(true);
-    setGithubButtonText(t('正在跳转 GitHub...'));
+    setGithubButtonState('redirecting');
     if (githubTimeoutRef.current) {
       clearTimeout(githubTimeoutRef.current);
     }
     githubTimeoutRef.current = setTimeout(() => {
       setGithubLoading(false);
-      setGithubButtonText(t('请求超时，请刷新页面后重新发起 GitHub 登录'));
+      setGithubButtonState('timeout');
       setGithubButtonDisabled(true);
     }, 20000);
     try {
-      onGitHubOAuthClicked(status.github_client_id, inputs.invitation_code);
+      onGitHubOAuthClicked(status.github_client_id, { shouldLogout: true, invitationCode: inputs.invitation_code });
     } finally {
       setTimeout(() => setGithubLoading(false), 3000);
     }
@@ -288,7 +302,7 @@ const RegisterForm = () => {
     }
     setDiscordLoading(true);
     try {
-      onDiscordOAuthClicked(status.discord_client_id, inputs.invitation_code);
+      onDiscordOAuthClicked(status.discord_client_id, { shouldLogout: true, invitationCode: inputs.invitation_code });
     } finally {
       setTimeout(() => setDiscordLoading(false), 3000);
     }
@@ -301,7 +315,12 @@ const RegisterForm = () => {
     }
     setOidcLoading(true);
     try {
-      onOIDCClicked(status.oidc_authorization_endpoint, status.oidc_client_id, false, inputs.invitation_code);
+      onOIDCClicked(
+        status.oidc_authorization_endpoint,
+        status.oidc_client_id,
+        false,
+        { shouldLogout: true, invitationCode: inputs.invitation_code },
+      );
     } finally {
       setTimeout(() => setOidcLoading(false), 3000);
     }
@@ -314,7 +333,7 @@ const RegisterForm = () => {
     }
     setLinuxdoLoading(true);
     try {
-      onLinuxDOOAuthClicked(status.linuxdo_client_id, inputs.invitation_code);
+      onLinuxDOOAuthClicked(status.linuxdo_client_id, { shouldLogout: true, invitationCode: inputs.invitation_code });
     } finally {
       setTimeout(() => setLinuxdoLoading(false), 3000);
     }
@@ -432,7 +451,15 @@ const RegisterForm = () => {
                     theme='outline'
                     className='w-full h-12 flex items-center justify-center !rounded-full border border-gray-200 hover:bg-gray-50 transition-colors'
                     type='tertiary'
-                    icon={<SiDiscord style={{ color: '#5865F2', width: '20px', height: '20px' }} />}
+                    icon={
+                      <SiDiscord
+                        style={{
+                          color: '#5865F2',
+                          width: '20px',
+                          height: '20px',
+                        }}
+                      />
+                    }
                     onClick={handleDiscordClick}
                     loading={discordLoading}
                   >
@@ -657,7 +684,9 @@ const RegisterForm = () => {
                     htmlType='submit'
                     onClick={handleSubmit}
                     loading={registerLoading}
-                    disabled={(hasUserAgreement || hasPrivacyPolicy) && !agreedToTerms}
+                    disabled={
+                      (hasUserAgreement || hasPrivacyPolicy) && !agreedToTerms
+                    }
                   >
                     {t('注册')}
                   </Button>

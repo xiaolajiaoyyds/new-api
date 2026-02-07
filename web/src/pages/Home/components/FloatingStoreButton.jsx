@@ -4,7 +4,7 @@ import { ShoppingBag } from 'lucide-react';
 const FloatingStoreButton = () => {
   return (
     <a
-      href='https://store.wzw.pp.ua'
+      href='https://store.yyds.215.im'
       target='_blank'
       rel='noopener noreferrer'
       className='fixed top-24 right-4 z-40 flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 animate-bounce-slow'

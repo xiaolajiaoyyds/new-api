@@ -91,6 +91,8 @@ export const useDashboardData = (userState, userDispatch, statusState) => {
     statusState?.status?.announcements_enabled ?? true;
   const faqEnabled = statusState?.status?.faq_enabled ?? true;
   const uptimeEnabled = statusState?.status?.uptime_kuma_enabled ?? true;
+  const checkinDashboardEnabled =
+    statusState?.status?.checkin_dashboard_enabled ?? false;
 
   const hasApiInfoPanel = apiInfoEnabled;
   const hasInfoPanels = announcementsEnabled || faqEnabled || uptimeEnabled;
@@ -305,6 +307,7 @@ export const useDashboardData = (userState, userDispatch, statusState) => {
     announcementsEnabled,
     faqEnabled,
     uptimeEnabled,
+    checkinDashboardEnabled,
 
     // 函数
     handleInputChange,

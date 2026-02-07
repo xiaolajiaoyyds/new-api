@@ -9,7 +9,7 @@ const { Title, Text } = Typography;
 const CodexGuide = () => {
   const { t } = useTranslation();
   const [activeOS, setActiveOS] = useState('macos');
-  const siteAddress = 'https://wzw.pp.ua';
+  const siteAddress = 'https://yyds.215.im';
 
   const installCommands = {
     npm: 'npm install -g @openai/codex',

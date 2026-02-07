@@ -44,7 +44,9 @@ import Midjourney from './pages/Midjourney';
 import Pricing from './pages/Pricing';
 import Task from './pages/Task';
 import ModelPage from './pages/Model';
+import ModelDeploymentPage from './pages/ModelDeployment';
 import Playground from './pages/Playground';
+import Subscription from './pages/Subscription';
 import OAuth2Callback from './components/auth/OAuth2Callback';
 import PersonalSetting from './components/settings/PersonalSetting';
 import Setup from './pages/Setup';
@@ -53,6 +55,7 @@ import SetupCheck from './components/layout/SetupCheck';
 const Home = lazy(() => import('./pages/Home'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const About = lazy(() => import('./pages/About'));
+const Intro = lazy(() => import('./pages/Intro'));
 const UserAgreement = lazy(() => import('./pages/UserAgreement'));
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 const ChatRoom = lazy(() => import('./pages/ChatRoom'));
@@ -108,6 +111,22 @@ function App() {
           element={
             <AdminRoute>
               <ModelPage />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path='/console/deployment'
+          element={
+            <AdminRoute>
+              <ModelDeploymentPage />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path='/console/subscription'
+          element={
+            <AdminRoute>
+              <Subscription />
             </AdminRoute>
           }
         />
@@ -337,6 +356,14 @@ function App() {
           element={
             <Suspense fallback={<Loading></Loading>} key={location.pathname}>
               <About />
+            </Suspense>
+          }
+        />
+        <Route
+          path='/intro'
+          element={
+            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+              <Intro />
             </Suspense>
           }
         />

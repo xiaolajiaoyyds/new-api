@@ -6,7 +6,7 @@ const { Title, Text } = Typography;
 
 const OpenAIGuide = () => {
   const { t } = useTranslation();
-  const siteAddress = 'https://wzw.pp.ua';
+  const siteAddress = 'https://yyds.215.im';
 
   const codeExample = `OPENAI_API_KEY=sk-xxxxxx
 OPENAI_BASE_URL=${siteAddress}/v1`;

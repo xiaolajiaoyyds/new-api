@@ -9,7 +9,7 @@ const { Title, Text } = Typography;
 const ClaudeCodeGuide = () => {
   const { t } = useTranslation();
   const [activeOS, setActiveOS] = useState('macos');
-  const siteAddress = 'https://wzw.pp.ua';
+  const siteAddress = 'https://yyds.215.im';
 
   const commands = {
     windows: {

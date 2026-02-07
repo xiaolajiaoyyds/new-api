@@ -17,14 +17,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 
-import { useMemo } from 'react';
+import { useMemo, useContext } from 'react';
+import { StatusContext } from '../../context/Status';
 
 export const useNavigation = (t, docsLink, headerNavModules) => {
+  const [statusState] = useContext(StatusContext);
+
   const mainNavLinks = useMemo(() => {
     // 默认配置，如果没有传入配置则显示所有模块
     const defaultModules = {
       home: true,
-      ldcStore: true,
+      customLink: false,
       console: true,
       pricing: true,
       chatRoom: true,
@@ -35,18 +38,31 @@ export const useNavigation = (t, docsLink, headerNavModules) => {
     // 使用传入的配置或默认配置
     const modules = headerNavModules || defaultModules;
 
+    // 获取聊天室启用状态
+    const chatRoomEnabled = statusState?.status?.chat_room_enabled ?? false;
+
+    // 获取自定义链接配置
+    const customLinkName = modules.customLink?.name || '';
+    const customLinkUrl = modules.customLink?.url || '';
+    const customLinkEnabled = modules.customLink?.enabled && customLinkName && customLinkUrl;
+
     const allLinks = [
       {
         text: t('首页'),
         itemKey: 'home',
         to: '/',
       },
-      {
-        text: t('LDC商店'),
-        itemKey: 'ldcStore',
-        isExternal: true,
-        externalLink: 'https://store.wzw.pp.ua',
-      },
+      // 自定义外链
+      ...(customLinkEnabled
+        ? [
+            {
+              text: customLinkName,
+              itemKey: 'customLink',
+              isExternal: true,
+              externalLink: customLinkUrl,
+            },
+          ]
+        : []),
       {
         text: t('控制台'),
         itemKey: 'console',
@@ -73,7 +89,12 @@ export const useNavigation = (t, docsLink, headerNavModules) => {
           ]
         : []),
       {
-        text: t('关于'),
+        text: modules.intro?.name || t('测速'),
+        itemKey: 'intro',
+        to: '/intro',
+      },
+      {
+        text: modules.about?.name || t('关于'),
         itemKey: 'about',
         to: '/about',
       },
@@ -90,15 +111,16 @@ export const useNavigation = (t, docsLink, headerNavModules) => {
           ? modules.pricing.enabled !== false
           : modules.pricing !== false;
       }
-      if (link.itemKey === 'ldcStore') {
-        return modules.ldcStore !== false;
+      if (link.itemKey === 'customLink') {
+        return customLinkEnabled;
       }
       if (link.itemKey === 'chatRoom') {
-        return modules.chatRoom !== false;
+        // 同时检查顶栏配置和聊天室功能开关
+        return modules.chatRoom !== false && chatRoomEnabled;
       }
       return modules[link.itemKey] !== false;
     });
-  }, [t, docsLink, headerNavModules]);
+  }, [t, docsLink, headerNavModules, statusState?.status?.chat_room_enabled]);
 
   return {
     mainNavLinks,

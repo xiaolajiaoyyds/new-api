@@ -36,8 +36,7 @@ func (a *Adaptor) ConvertAudioRequest(c *gin.Context, info *relaycommon.RelayInf
 }
 
 func (a *Adaptor) ConvertImageRequest(c *gin.Context, info *relaycommon.RelayInfo, request dto.ImageRequest) (any, error) {
-	//TODO implement me
-	return nil, errors.New("not implemented")
+	return request, nil
 }
 
 func (a *Adaptor) Init(info *relaycommon.RelayInfo) {
@@ -63,6 +62,8 @@ func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
 				return fmt.Sprintf("%s/embeddings", specialPlan.OpenAIBaseURL), nil
 			}
 			return fmt.Sprintf("%s/api/paas/v4/embeddings", baseURL), nil
+		case relayconstant.RelayModeImagesGenerations:
+			return fmt.Sprintf("%s/api/paas/v4/images/generations", baseURL), nil
 		default:
 			if hasSpecialPlan && specialPlan.OpenAIBaseURL != "" {
 				return fmt.Sprintf("%s/chat/completions", specialPlan.OpenAIBaseURL), nil
@@ -108,12 +109,12 @@ func (a *Adaptor) DoRequest(c *gin.Context, info *relaycommon.RelayInfo, request
 func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (usage any, err *types.NewAPIError) {
 	switch info.RelayFormat {
 	case types.RelayFormatClaude:
-		if info.IsStream {
-			return claude.ClaudeStreamHandler(c, resp, info, claude.RequestModeMessage)
-		} else {
-			return claude.ClaudeHandler(c, resp, info, claude.RequestModeMessage)
-		}
+		adaptor := claude.Adaptor{}
+		return adaptor.DoResponse(c, resp, info)
 	default:
+		if info.RelayMode == relayconstant.RelayModeImagesGenerations {
+			return zhipu4vImageHandler(c, resp, info)
+		}
 		adaptor := openai.Adaptor{}
 		return adaptor.DoResponse(c, resp, info)
 	}

@@ -213,6 +213,7 @@ func updateConfigFromMap(config interface{}, configMap map[string]string) error 
 		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 			intValue, err := strconv.ParseInt(strValue, 10, 64)
 			if err != nil {
+				// 兼容 float 格式的字符串（如 "2.000000"）
 				floatValue, floatErr := strconv.ParseFloat(strValue, 64)
 				if floatErr != nil {
 					continue
@@ -223,6 +224,7 @@ func updateConfigFromMap(config interface{}, configMap map[string]string) error 
 		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 			uintValue, err := strconv.ParseUint(strValue, 10, 64)
 			if err != nil {
+				// 兼容 float 格式的字符串
 				floatValue, floatErr := strconv.ParseFloat(strValue, 64)
 				if floatErr != nil || floatValue < 0 {
 					continue
