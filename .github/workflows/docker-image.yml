@@ -9,6 +9,10 @@ on:
 env:
   GHCR_IMAGE: ghcr.io/xiaolajiaoyyds/new-api
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   build_single_arch:
     name: Build & push (${{ matrix.arch }})
