@@ -9,7 +9,7 @@ const ProjectCard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('https://api.github.com/repos/jasonwong1991/easy_proxies')
+    fetch('https://api.github.com/repos/xiaolajiaoyyds/easy_proxies')
       .then((res) => res.json())
       .then((data) => {
         setStars(data.stargazers_count);
@@ -22,7 +22,7 @@ const ProjectCard = () => {
     <Card
       className='cursor-pointer hover:shadow-md transition-shadow duration-300'
       onClick={() =>
-        window.open('https://github.com/jasonwong1991/easy_proxies', '_blank')
+        window.open('https://github.com/xiaolajiaoyyds/easy_proxies', '_blank')
       }
       bodyStyle={{ padding: '16px 24px' }}
     >
