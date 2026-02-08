@@ -88,7 +88,7 @@ const AddUserModal = (props) => {
         visible={props.visible}
         width={isMobile ? '100%' : 600}
         footer={
-          <div className='flex justify-end bg-white'>
+          <div className='flex justify-end bg-white dark:bg-zinc-800'>
             <Space>
               <Button
                 theme='solid'

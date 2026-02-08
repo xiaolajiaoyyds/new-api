@@ -21,11 +21,7 @@ import {
   Row,
   Col,
 } from '@douyinfe/semi-ui';
-import {
-  IconSave,
-  IconClose,
-  IconUserAdd,
-} from '@douyinfe/semi-icons';
+import { IconSave, IconClose, IconUserAdd } from '@douyinfe/semi-icons';
 
 const { Text, Title } = Typography;
 
@@ -129,7 +125,10 @@ const EditInvitationModal = (props) => {
               </div>
             ),
             onOk: () => {
-              downloadTextAsFile(codes, `invitation_codes_${localInputs.name || 'batch'}.txt`);
+              downloadTextAsFile(
+                codes,
+                `invitation_codes_${localInputs.name || 'batch'}.txt`,
+              );
             },
           });
         }
@@ -163,7 +162,7 @@ const EditInvitationModal = (props) => {
       visible={props.visible}
       width={isMobile ? '100%' : 500}
       footer={
-        <div className='flex justify-end bg-white'>
+        <div className='flex justify-end bg-white dark:bg-zinc-800'>
           <Space>
             <Button
               theme='solid'
@@ -200,9 +199,7 @@ const EditInvitationModal = (props) => {
                   <IconUserAdd size={16} />
                 </Avatar>
                 <div>
-                  <Text className='text-lg font-medium'>
-                    {t('邀请码设置')}
-                  </Text>
+                  <Text className='text-lg font-medium'>{t('邀请码设置')}</Text>
                   <div className='text-xs text-gray-600'>
                     {t('设置邀请码的基本信息')}
                   </div>
@@ -226,9 +223,7 @@ const EditInvitationModal = (props) => {
                       label={t('生成数量')}
                       min={1}
                       max={1000}
-                      rules={[
-                        { required: true, message: t('请输入生成数量') },
-                      ]}
+                      rules={[{ required: true, message: t('请输入生成数量') }]}
                       style={{ width: '100%' }}
                       extraText={t('最多一次生成 1000 个')}
                     />

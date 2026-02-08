@@ -21,12 +21,19 @@ import { Toast, Pagination } from '@douyinfe/semi-ui';
 import { toastConstants } from '../constants';
 import React from 'react';
 import { toast } from 'react-toastify';
+import { clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 import {
   THINK_TAG_REGEX,
   MESSAGE_ROLES,
 } from '../constants/playground.constants';
 import { TABLE_COMPACT_MODES_KEY } from '../constants';
 import { MOBILE_BREAKPOINT } from '../hooks/common/useIsMobile';
+
+// Tailwind class merge utility
+export function cn(...inputs) {
+  return twMerge(clsx(inputs));
+}
 
 const HTMLToastContent = ({ htmlContent }) => {
   return <div dangerouslySetInnerHTML={{ __html: htmlContent }} />;

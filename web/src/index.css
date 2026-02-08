@@ -25,8 +25,8 @@ body.sidebar-collapsed {
 }
 
 body {
-  font-family: Lato, 'Helvetica Neue', Arial, Helvetica, 'Microsoft YaHei',
-    sans-serif;
+  font-family:
+    Lato, 'Helvetica Neue', Arial, Helvetica, 'Microsoft YaHei', sans-serif;
   color: var(--semi-color-text-0);
   background-color: var(--semi-color-bg-0);
 }
@@ -42,8 +42,8 @@ body {
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family:
+    source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
 /* ==================== 布局相关样式 ==================== */
@@ -740,11 +740,8 @@ html:not(.dark) .blur-ball-teal {
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  background: radial-gradient(
-      circle at -5% -10%,
-      var(--pb1) 0%,
-      transparent 60%
-    ),
+  background:
+    radial-gradient(circle at -5% -10%, var(--pb1) 0%, transparent 60%),
     radial-gradient(circle at 105% -10%, var(--pb2) 0%, transparent 55%),
     radial-gradient(circle at 5% 110%, var(--pb3) 0%, transparent 55%),
     radial-gradient(circle at 105% 110%, var(--pb4) 0%, transparent 50%);
@@ -913,4 +910,63 @@ html.dark .with-pastel-balls::before {
 .semi-button,
 .semi-datepicker-range-input {
   border-radius: 10px !important;
+}
+
+/* ==================== Semi UI Portal 组件暗黑模式适配 ==================== */
+/* Dropdown 下拉菜单 */
+html.dark .semi-dropdown-menu {
+  background-color: rgb(39 39 42) !important; /* zinc-800 */
+  border: 2px solid rgb(161 161 170) !important; /* zinc-400 */
+  box-shadow: 3px 3px 0 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+html.dark .semi-dropdown-item {
+  color: white !important;
+}
+
+html.dark .semi-dropdown-item:hover {
+  background-color: rgb(0, 95, 190) !important;
+}
+
+html.dark .semi-dropdown-item:active {
+  background-color: rgb(0, 80, 170) !important;
+}
+
+/* Tooltip 提示框 */
+html.dark .semi-tooltip-wrapper {
+  background-color: rgb(39 39 42) !important;
+  border: 1px solid rgb(161 161 170) !important;
+}
+
+html.dark .semi-tooltip-wrapper .semi-tooltip-content {
+  color: white !important;
+}
+
+/* Popover 气泡卡片 */
+html.dark .semi-popover {
+  background-color: rgb(39 39 42) !important;
+  border: 2px solid rgb(161 161 170) !important;
+}
+
+html.dark .semi-popover-content {
+  color: white !important;
+}
+
+/* Select 下拉选择器 */
+html.dark .semi-select-option-list {
+  background-color: rgb(39 39 42) !important;
+  border: 2px solid rgb(161 161 170) !important;
+}
+
+html.dark .semi-select-option {
+  color: white !important;
+}
+
+html.dark .semi-select-option:hover,
+html.dark .semi-select-option-focused {
+  background-color: rgb(63 63 70) !important; /* zinc-700 */
+}
+
+html.dark .semi-select-option-selected {
+  background-color: rgb(0, 95, 190) !important;
 }

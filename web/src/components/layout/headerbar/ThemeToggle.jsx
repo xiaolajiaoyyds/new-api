@@ -95,13 +95,9 @@ const ThemeToggle = ({ theme, onThemeToggle, t }) => {
         </Dropdown.Menu>
       }
     >
-      <Button
-        icon={currentButtonIcon}
-        aria-label={t('切换主题')}
-        theme='borderless'
-        type='tertiary'
-        className='!p-1.5 !text-current focus:!bg-semi-color-fill-1 !rounded-full !bg-semi-color-fill-0 hover:!bg-semi-color-fill-1'
-      />
+      <div className='p-1.5 border-2 border-black dark:border-white bg-transparent hover:bg-gray-100 dark:hover:bg-zinc-700 shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.2)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none cursor-pointer transition-all'>
+        {currentButtonIcon}
+      </div>
     </Dropdown>
   );
 };

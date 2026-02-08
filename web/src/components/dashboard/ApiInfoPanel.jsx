@@ -51,7 +51,7 @@ const ApiInfoPanel = ({
         {apiInfoData.length > 0 ? (
           apiInfoData.map((api) => (
             <React.Fragment key={api.id}>
-              <div className='flex p-2 hover:bg-white rounded-lg transition-colors cursor-pointer'>
+              <div className='flex p-2 hover:bg-white dark:hover:bg-zinc-700 rounded-lg transition-colors cursor-pointer'>
                 <div className='flex-shrink-0 mr-3'>
                   <Avatar size='extra-small' color={api.color}>
                     {api.route.substring(0, 2)}

@@ -385,7 +385,7 @@ const NotificationSettings = ({
           <Typography.Text className='text-lg font-medium'>
             {t('其他设置')}
           </Typography.Text>
-          <div className='text-xs text-gray-600'>
+          <div className='text-xs text-gray-600 dark:text-gray-400'>
             {t('通知、价格和隐私相关设置')}
           </div>
         </div>
@@ -592,9 +592,9 @@ const NotificationSettings = ({
                       <div className='text-sm text-gray-700 mb-3'>
                         <strong>{t('模板示例')}</strong>
                       </div>
-                      <div className='text-xs text-gray-600 font-mono bg-white p-3 rounded-lg shadow-sm mb-4'>
-                        https://api.day.app/yourkey/{'{{title}}'}/
-                        {'{{content}}'}?sound=alarm&group=quota
+                      <div className='text-xs text-gray-600 dark:text-gray-400 font-mono bg-white dark:bg-zinc-800 p-3 rounded-lg shadow-sm mb-4'>
+                      https://api.day.app/yourkey/{'{{title}}'}/
+                      {'{{content}}'}?sound=alarm&group=quota
                       </div>
                       <div className='text-xs text-gray-500 space-y-2'>
                         <div>

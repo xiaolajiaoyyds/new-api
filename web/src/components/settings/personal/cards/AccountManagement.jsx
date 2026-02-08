@@ -73,7 +73,7 @@ const AccountManagement = ({
 }) => {
   const renderAccountInfo = (accountId, label) => {
     if (!accountId || accountId === '') {
-      return <span className='text-gray-500'>{t('未绑定')}</span>;
+      return <span className='text-gray-500 dark:text-gray-400'>{t('未绑定')}</span>;
     }
 
     const popContent = (
@@ -82,14 +82,14 @@ const AccountManagement = ({
           {accountId}
         </Typography.Paragraph>
         {label ? (
-          <div className='mt-1 text-[11px] text-gray-500'>{label}</div>
+          <div className='mt-1 text-[11px] text-gray-500 dark:text-gray-400'>{label}</div>
         ) : null}
       </div>
     );
 
     return (
       <Popover content={popContent} position='top' trigger='hover'>
-        <span className='block max-w-full truncate text-gray-600 hover:text-blue-600 cursor-pointer'>
+        <span className='block max-w-full truncate text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer'>
           {accountId}
         </span>
       </Popover>
@@ -176,7 +176,7 @@ const AccountManagement = ({
           <Typography.Text className='text-lg font-medium'>
             {t('账户管理')}
           </Typography.Text>
-          <div className='text-xs text-gray-600'>
+          <div className='text-xs text-gray-600 dark:text-gray-400'>
             {t('账户绑定、安全设置和身份验证')}
           </div>
         </div>
@@ -206,10 +206,10 @@ const AccountManagement = ({
                       />
                     </div>
                     <div className='flex-1 min-w-0'>
-                      <div className='font-medium text-gray-900'>
+                      <div className='font-medium text-gray-900 dark:text-gray-100'>
                         {t('邮箱')}
                       </div>
-                      <div className='text-sm text-gray-500 truncate'>
+                      <div className='text-sm text-gray-500 dark:text-gray-400 truncate'>
                         {renderAccountInfo(
                           userState.user?.email,
                           t('邮箱地址'),
@@ -243,10 +243,10 @@ const AccountManagement = ({
                       />
                     </div>
                     <div className='flex-1 min-w-0'>
-                      <div className='font-medium text-gray-900'>
+                      <div className='font-medium text-gray-900 dark:text-gray-100'>
                         {t('微信')}
                       </div>
-                      <div className='text-sm text-gray-500 truncate'>
+                      <div className='text-sm text-gray-500 dark:text-gray-400 truncate'>
                         {!status.wechat_login
                           ? t('未启用')
                           : isBound(userState.user?.wechat_id)
@@ -284,10 +284,10 @@ const AccountManagement = ({
                       />
                     </div>
                     <div className='flex-1 min-w-0'>
-                      <div className='font-medium text-gray-900'>
+                      <div className='font-medium text-gray-900 dark:text-gray-100'>
                         {t('GitHub')}
                       </div>
-                      <div className='text-sm text-gray-500 truncate'>
+                      <div className='text-sm text-gray-500 dark:text-gray-400 truncate'>
                         {renderAccountInfo(
                           userState.user?.github_id,
                           t('GitHub ID'),
@@ -325,10 +325,10 @@ const AccountManagement = ({
                       />
                     </div>
                     <div className='flex-1 min-w-0'>
-                      <div className='font-medium text-gray-900'>
+                      <div className='font-medium text-gray-900 dark:text-gray-100'>
                         {t('Discord')}
                       </div>
-                      <div className='text-sm text-gray-500 truncate'>
+                      <div className='text-sm text-gray-500 dark:text-gray-400 truncate'>
                         {renderAccountInfo(
                           userState.user?.discord_id,
                           t('Discord ID'),
@@ -366,10 +366,10 @@ const AccountManagement = ({
                       />
                     </div>
                     <div className='flex-1 min-w-0'>
-                      <div className='font-medium text-gray-900'>
+                      <div className='font-medium text-gray-900 dark:text-gray-100'>
                         {t('OIDC')}
                       </div>
-                      <div className='text-sm text-gray-500 truncate'>
+                      <div className='text-sm text-gray-500 dark:text-gray-400 truncate'>
                         {renderAccountInfo(
                           userState.user?.oidc_id,
                           t('OIDC ID'),
@@ -409,10 +409,10 @@ const AccountManagement = ({
                       />
                     </div>
                     <div className='flex-1 min-w-0'>
-                      <div className='font-medium text-gray-900'>
+                      <div className='font-medium text-gray-900 dark:text-gray-100'>
                         {t('Telegram')}
                       </div>
-                      <div className='text-sm text-gray-500 truncate'>
+                      <div className='text-sm text-gray-500 dark:text-gray-400 truncate'>
                         {renderAccountInfo(
                           userState.user?.telegram_id,
                           t('Telegram ID'),
@@ -460,7 +460,7 @@ const AccountManagement = ({
                 onCancel={() => setShowTelegramBindModal(false)}
                 footer={null}
               >
-                <div className='my-3 text-sm text-gray-600'>
+                <div className='my-3 text-sm text-gray-600 dark:text-gray-400'>
                   {t('点击下方按钮通过 Telegram 完成绑定')}
                 </div>
                 <div className='flex justify-center'>
@@ -484,10 +484,10 @@ const AccountManagement = ({
                       />
                     </div>
                     <div className='flex-1 min-w-0'>
-                      <div className='font-medium text-gray-900'>
+                      <div className='font-medium text-gray-900 dark:text-gray-100'>
                         {t('LinuxDO')}
                       </div>
-                      <div className='text-sm text-gray-500 truncate'>
+                      <div className='text-sm text-gray-500 dark:text-gray-400 truncate'>
                         {renderAccountInfo(
                           userState.user?.linux_do_id,
                           t('LinuxDO ID'),
@@ -530,10 +530,10 @@ const AccountManagement = ({
                             />
                           </div>
                           <div className='flex-1 min-w-0'>
-                            <div className='font-medium text-gray-900'>
+                            <div className='font-medium text-gray-900 dark:text-gray-100'>
                               {provider.name}
                             </div>
-                            <div className='text-sm text-gray-500 truncate'>
+                            <div className='text-sm text-gray-500 dark:text-gray-400 truncate'>
                               {bound
                                 ? renderAccountInfo(
                                     binding?.provider_user_id,
@@ -671,7 +671,7 @@ const AccountManagement = ({
                             ? t('已启用 Passkey，无需密码即可登录')
                             : t('使用 Passkey 实现免密且更安全的登录体验')}
                         </Typography.Text>
-                        <div className='mt-2 text-xs text-gray-500 space-y-1'>
+                        <div className='mt-2 text-xs text-gray-500 dark:text-gray-400 space-y-1'>
                           <div>
                             {t('最后使用时间')}：{lastUsedLabel}
                           </div>

@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
-import { Modal, Form, TextArea, Button, Typography } from '@douyinfe/semi-ui';
 import { useTranslation } from 'react-i18next';
 import { API, showError, showSuccess } from '../../../../helpers';
-
-const { Text } = Typography;
+import { Modal, Button, Textarea } from '../../../../components/retroui';
 
 const AppealModal = ({ visible, onClose, onSuccess, user }) => {
   const { t } = useTranslation();
@@ -47,45 +45,40 @@ const AppealModal = ({ visible, onClose, onSuccess, user }) => {
     <Modal
       title={t('提交申诉')}
       visible={visible}
-      onCancel={handleClose}
-      footer={null}
+      onClose={handleClose}
       closeOnEsc={!loading}
       maskClosable={!loading}
+      footer={
+        <div className='flex justify-end gap-3'>
+          <Button variant='secondary' onClick={handleClose} disabled={loading}>
+            {t('取消')}
+          </Button>
+          <Button variant='primary' onClick={handleSubmit} disabled={loading}>
+            {loading ? '...' : t('提交申诉')}
+          </Button>
+        </div>
+      }
     >
       <div className='mb-4'>
-        <Text type='secondary'>
+        <span className='text-gray-600 dark:text-gray-400'>
           {t('您的账户因以下原因被封禁：')}
-        </Text>
-        <Text type='danger' strong style={{ display: 'block', marginTop: 8 }}>
-          {user?.ban_reason || t('未说明')}
-        </Text>
+        </span>
+        <div className='mt-2 p-3 bg-red-100 dark:bg-red-900/30 border-2 border-black dark:border-white'>
+          <span className='font-bold text-red-600 dark:text-red-400'>
+            {user?.ban_reason || t('未说明')}
+          </span>
+        </div>
       </div>
 
-      <Form>
-        <Form.Slot label={t('申诉理由')}>
-          <TextArea
-            value={reason}
-            onChange={setReason}
-            placeholder={t('请详细说明您的申诉理由（10-1000字符）')}
-            rows={5}
-            maxCount={1000}
-            showClear
-          />
-        </Form.Slot>
-      </Form>
-
-      <div className='flex justify-end gap-2 mt-4'>
-        <Button onClick={handleClose} disabled={loading}>
-          {t('取消')}
-        </Button>
-        <Button
-          theme='solid'
-          type='warning'
-          onClick={handleSubmit}
-          loading={loading}
-        >
-          {t('提交申诉')}
-        </Button>
+      <Textarea
+        label={t('申诉理由')}
+        value={reason}
+        onChange={(e) => setReason(e.target.value)}
+        placeholder={t('请详细说明您的申诉理由（10-1000字符）')}
+        rows={5}
+      />
+      <div className='text-right text-sm text-gray-500 mt-1'>
+        {reason.length}/1000
       </div>
     </Modal>
   );

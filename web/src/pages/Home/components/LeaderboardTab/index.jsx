@@ -1,11 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { Typography, Avatar, Tag, Card, Tabs, TabPane, RadioGroup, Radio } from '@douyinfe/semi-ui';
-import { IconUser, IconBox } from '@douyinfe/semi-icons';
-import { Squirrel } from 'lucide-react';
+import { User, Box, Squirrel } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import CardTable from '../../../../components/common/ui/CardTable';
 import { API, showError } from '../../../../helpers';
 import { renderNumber } from '../../../../helpers/render';
+import {
+  Card,
+  CardContent,
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+  RadioGroup,
+  Radio,
+  Table,
+  Avatar,
+  Badge,
+} from '../../../../components/retroui';
 
 const LeaderboardTab = () => {
   const { t } = useTranslation();
@@ -97,98 +107,76 @@ const LeaderboardTab = () => {
     return '#' + '00000'.substring(0, 6 - c.length) + c;
   };
 
-  const getLevelColor = (level) => {
-    const colors = {
-      0: 'grey',
-      1: 'green',
-      2: 'blue',
+  const getLevelVariant = (level) => {
+    const variants = {
+      0: 'default',
+      1: 'success',
+      2: 'info',
       3: 'purple',
-      4: 'orange',
+      4: 'warning',
     };
-    return colors[level] || 'grey';
+    return variants[level] || 'default';
   };
 
   const renderUserCell = (record) => {
     const hasLinuxDO = record.linux_do_username && record.linux_do_avatar;
-    const avatarSrc = hasLinuxDO ? record.linux_do_avatar : null;
-
-    // Display logic:
-    // - If has both name and username: show "name（username）"
-    // - If only has username (no name): show just "username"
-    // - If no Linux.do: show display_name or "匿名用户"
     let displayText;
     if (hasLinuxDO) {
-      const hasName = record.display_name && record.display_name !== record.linux_do_username;
-      if (hasName) {
-        displayText = `${record.display_name}（${record.linux_do_username}）`;
-      } else {
-        displayText = record.linux_do_username;
-      }
+      const hasName =
+        record.display_name && record.display_name !== record.linux_do_username;
+      displayText = hasName
+        ? `${record.display_name}（${record.linux_do_username}）`
+        : record.linux_do_username;
     } else {
       displayText = record.display_name || t('匿名用户');
     }
-
-    const avatarName = hasLinuxDO ? record.linux_do_username : (record.display_name || t('匿名用户'));
+    const avatarName = hasLinuxDO
+      ? record.linux_do_username
+      : record.display_name || t('匿名用户');
 
     return (
       <div className='flex items-center gap-2'>
         <div className='relative'>
-          {avatarSrc ? (
-            <Avatar size='small' src={avatarSrc} />
-          ) : (
-            <Avatar size='small' color={stringToColor(avatarName)}>
-              {avatarName?.charAt(0)?.toUpperCase() || '?'}
-            </Avatar>
-          )}
+          <Avatar
+            size='sm'
+            src={hasLinuxDO ? record.linux_do_avatar : null}
+            color={stringToColor(avatarName)}
+            fallback={avatarName?.charAt(0)?.toUpperCase() || '?'}
+          />
           {hasLinuxDO && record.linux_do_level > 0 && (
-            <Tag
-              color={getLevelColor(record.linux_do_level)}
-              size='small'
-              style={{
-                position: 'absolute',
-                bottom: -4,
-                right: -8,
-                fontSize: '10px',
-                padding: '0 4px',
-                minWidth: 'auto',
-                height: '14px',
-                lineHeight: '14px',
-              }}
+            <Badge
+              variant={getLevelVariant(record.linux_do_level)}
+              size='sm'
+              className='absolute -bottom-1 -right-2 text-[10px] px-1 py-0 min-w-[16px] h-4'
             >
               {record.linux_do_level}
-            </Tag>
+            </Badge>
           )}
         </div>
-        <Typography.Text>{displayText}</Typography.Text>
+        <span className='text-black dark:text-white'>{displayText}</span>
       </div>
     );
   };
 
   const renderRankCell = (text) => {
-    let color = 'var(--semi-color-text-2)';
     let emoji = '';
+    let className = 'text-black dark:text-white';
     if (text === 1) {
-      color = '#FFD700';
       emoji = '🥇';
+      className = 'text-amber-500 font-bold text-lg';
     }
     if (text === 2) {
-      color = '#C0C0C0';
       emoji = '🥈';
+      className = 'text-gray-400 font-bold text-lg';
     }
     if (text === 3) {
-      color = '#CD7F32';
       emoji = '🥉';
+      className = 'text-amber-700 font-bold text-lg';
     }
     return (
-      <Typography.Text
-        style={{
-          color,
-          fontWeight: text <= 3 ? 'bold' : 'normal',
-          fontSize: text <= 3 ? '1.1em' : '1em',
-        }}
-      >
+      <span className={className}>
         {emoji} #{text}
-      </Typography.Text>
+      </span>
     );
   };
 
@@ -240,8 +228,8 @@ const LeaderboardTab = () => {
       key: 'model_name',
       render: (text) => (
         <div className='flex items-center gap-2'>
-          <IconBox style={{ color: stringToColor(text) }} />
-          <Typography.Text copyable={{ content: text }}>{text}</Typography.Text>
+          <Box className='w-4 h-4' style={{ color: stringToColor(text) }} />
+          <span className='text-black dark:text-white font-mono'>{text}</span>
         </div>
       ),
     },
@@ -287,234 +275,187 @@ const LeaderboardTab = () => {
     },
   ];
 
-  return (
-    <div className='p-4'>
-      <Tabs activeKey={activeTab} onChange={setActiveTab}>
-        <TabPane
-          tab={
-            <span>
-              <IconUser style={{ marginRight: 4 }} />
-              {t('用户消耗排行')}
-            </span>
-          }
-          itemKey='users'
-        >
-          <div className='mt-4 mb-4'>
-            <RadioGroup
-              type='button'
-              value={userPeriod}
-              onChange={(e) => setUserPeriod(e.target.value)}
-            >
-              <Radio value='24h'>{t('24小时')}</Radio>
-              <Radio value='7d'>{t('7天')}</Radio>
-              <Radio value='14d'>{t('14天')}</Radio>
-              <Radio value='30d'>{t('一个月')}</Radio>
-              <Radio value='all'>{t('总榜')}</Radio>
-            </RadioGroup>
-          </div>
-          {myRank && (
-            <Card
-              className='mb-4 mt-4'
-              bodyStyle={{ padding: '12px 16px' }}
-              style={{
-                background:
-                  'linear-gradient(135deg, var(--semi-color-primary-light-default) 0%, var(--semi-color-primary-light-hover) 100%)',
-                border: '1px solid var(--semi-color-primary)',
-              }}
-            >
-              <div className='flex items-center justify-between flex-wrap gap-3'>
-                <div className='flex items-center gap-3'>
-                  <IconUser
-                    size='large'
-                    style={{ color: 'var(--semi-color-primary)' }}
-                  />
-                  <div>
-                    <Typography.Text strong style={{ fontSize: '14px' }}>
-                      {t('我的排名')}
-                    </Typography.Text>
-                    <div className='flex items-center gap-2 mt-1'>
-                      {renderUserCell(myRank)}
-                    </div>
-                  </div>
+  const MyRankCard = ({ rank, icon: Icon, color, showBalance }) => (
+    <Card className='mb-4 overflow-hidden' padding='none'>
+      <div
+        className='h-1'
+        style={{
+          background: `linear-gradient(90deg, ${color} 0%, transparent 100%)`,
+        }}
+      />
+      <CardContent className='p-4 sm:p-5'>
+        <div className='flex flex-col gap-4 sm:gap-5'>
+          <div className='flex items-center justify-between gap-3'>
+            <div className='flex items-center gap-3 min-w-0'>
+              <div
+                className='w-9 h-9 shrink-0 flex items-center justify-center border-2 border-black dark:border-white'
+                style={{ backgroundColor: `${color}20` }}
+              >
+                <Icon className='w-5 h-5' style={{ color }} />
+              </div>
+              <div className='min-w-0'>
+                <div className='font-bold text-black dark:text-white leading-none mb-1'>
+                  {t('我的排名')}
                 </div>
-                <div className='flex items-center gap-6 flex-wrap'>
-                  <div className='text-center'>
-                    <Typography.Text
-                      strong
-                      style={{
-                        fontSize: '24px',
-                        color: 'var(--semi-color-primary)',
-                      }}
-                    >
-                      #{myRank.rank}
-                    </Typography.Text>
-                    <Typography.Text
-                      type='tertiary'
-                      size='small'
-                      style={{ display: 'block' }}
-                    >
-                      {t('排名')}
-                    </Typography.Text>
-                  </div>
-                  <div className='text-center'>
-                    <Typography.Text strong style={{ fontSize: '16px' }}>
-                      {renderNumber(myRank.request_count || 0)}
-                    </Typography.Text>
-                    <Typography.Text
-                      type='tertiary'
-                      size='small'
-                      style={{ display: 'block' }}
-                    >
-                      {t('请求次数')}
-                    </Typography.Text>
-                  </div>
-                  <div className='text-center'>
-                    <Typography.Text strong style={{ fontSize: '16px' }}>
-                      {renderNumber(myRank.used_quota || 0)}
-                    </Typography.Text>
-                    <Typography.Text
-                      type='tertiary'
-                      size='small'
-                      style={{ display: 'block' }}
-                    >
-                      {t('Token 用量')}
-                    </Typography.Text>
-                  </div>
-                  <div className='text-center'>
-                    <Typography.Text strong style={{ fontSize: '16px' }}>
-                      ${(myRank.amount_usd || 0).toFixed(2)}
-                    </Typography.Text>
-                    <Typography.Text
-                      type='tertiary'
-                      size='small'
-                      style={{ display: 'block' }}
-                    >
-                      {t('消费金额')}
-                    </Typography.Text>
-                  </div>
+                <div className='truncate'>{renderUserCell(rank)}</div>
+              </div>
+            </div>
+
+            <div className='text-right'>
+              <div className='text-sm text-gray-500 dark:text-gray-400'>
+                {t('当前名次')}
+              </div>
+              <div className='text-2xl font-extrabold' style={{ color }}>
+                #{rank.rank}
+              </div>
+            </div>
+          </div>
+
+          {showBalance ? (
+            <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+              <div className='border-2 border-black dark:border-white p-3'>
+                <div className='text-xs text-gray-500 dark:text-gray-400 mb-1'>
+                  {t('余额')}
+                </div>
+                <div className='text-xl font-bold text-black dark:text-white'>
+                  ${(rank.amount_usd || 0).toFixed(2)}
                 </div>
               </div>
-            </Card>
+              <div className='border-2 border-black dark:border-white p-3'>
+                <div className='text-xs text-gray-500 dark:text-gray-400 mb-1'>
+                  {t('排名')}
+                </div>
+                <div className='text-xl font-bold' style={{ color }}>
+                  #{rank.rank}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className='grid grid-cols-2 sm:grid-cols-4 gap-3'>
+              <div className='border-2 border-black dark:border-white p-3'>
+                <div className='text-xs text-gray-500 dark:text-gray-400 mb-1'>
+                  {t('排名')}
+                </div>
+                <div className='text-lg font-bold' style={{ color }}>
+                  #{rank.rank}
+                </div>
+              </div>
+              <div className='border-2 border-black dark:border-white p-3'>
+                <div className='text-xs text-gray-500 dark:text-gray-400 mb-1'>
+                  {t('请求次数')}
+                </div>
+                <div className='text-lg font-bold text-black dark:text-white'>
+                  {renderNumber(rank.request_count || 0)}
+                </div>
+              </div>
+              <div className='border-2 border-black dark:border-white p-3'>
+                <div className='text-xs text-gray-500 dark:text-gray-400 mb-1'>
+                  {t('Token 用量')}
+                </div>
+                <div className='text-lg font-bold text-black dark:text-white'>
+                  {renderNumber(rank.used_quota || 0)}
+                </div>
+              </div>
+              <div className='border-2 border-black dark:border-white p-3'>
+                <div className='text-xs text-gray-500 dark:text-gray-400 mb-1'>
+                  {t('消费金额')}
+                </div>
+                <div className='text-lg font-bold text-black dark:text-white'>
+                  ${(rank.amount_usd || 0).toFixed(2)}
+                </div>
+              </div>
+            </div>
           )}
-          <CardTable
-            loading={userLoading}
-            columns={userColumns}
-            dataSource={userData}
-            rowKey='rank'
-            hidePagination={true}
-          />
-        </TabPane>
-        <TabPane
-          tab={
-            <span>
-              <IconBox style={{ marginRight: 4 }} />
-              {t('模型调用排行')}
-            </span>
-          }
-          itemKey='models'
-        >
-          <div className='mt-4 mb-4'>
-            <RadioGroup
-              type='button'
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  const PeriodSelector = ({ value, onChange }) => (
+    <RadioGroup
+      type='button'
+      value={value}
+      onChange={onChange}
+      className='mb-4'
+    >
+      <Radio value='24h'>{t('24小时')}</Radio>
+      <Radio value='7d'>{t('7天')}</Radio>
+      <Radio value='14d'>{t('14天')}</Radio>
+      <Radio value='30d'>{t('一个月')}</Radio>
+      <Radio value='all'>{t('总榜')}</Radio>
+    </RadioGroup>
+  );
+
+  return (
+    <div className='p-4'>
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList>
+          <TabsTrigger value='users'>
+            <User className='w-4 h-4 mr-1 inline' />
+            {t('用户消耗排行')}
+          </TabsTrigger>
+          <TabsTrigger value='models'>
+            <Box className='w-4 h-4 mr-1 inline' />
+            {t('模型调用排行')}
+          </TabsTrigger>
+          <TabsTrigger value='balance'>
+            <Squirrel className='w-4 h-4 mr-1 inline' />
+            {t('囤囤鼠排行')}
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value='users'>
+          <div className='mt-4'>
+            <PeriodSelector
+              value={userPeriod}
+              onChange={(e) => setUserPeriod(e.target.value)}
+            />
+            {myRank && <MyRankCard rank={myRank} icon={User} color='#1d4ed8' />}
+            <Table
+              loading={userLoading}
+              columns={userColumns}
+              dataSource={userData}
+              rowKey='rank'
+              emptyText={t('暂无数据')}
+            />
+          </div>
+        </TabsContent>
+
+        <TabsContent value='models'>
+          <div className='mt-4'>
+            <PeriodSelector
               value={modelPeriod}
               onChange={(e) => setModelPeriod(e.target.value)}
-            >
-              <Radio value='24h'>{t('24小时')}</Radio>
-              <Radio value='7d'>{t('7天')}</Radio>
-              <Radio value='14d'>{t('14天')}</Radio>
-              <Radio value='30d'>{t('一个月')}</Radio>
-              <Radio value='all'>{t('总榜')}</Radio>
-            </RadioGroup>
-          </div>
-          <div className='mt-4'>
-            <CardTable
+            />
+            <Table
               loading={modelLoading}
               columns={modelColumns}
               dataSource={modelData}
               rowKey='rank'
-              hidePagination={true}
+              emptyText={t('暂无数据')}
             />
           </div>
-        </TabPane>
-        <TabPane
-          tab={
-            <span style={{ display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap' }}>
-              <Squirrel size={14} style={{ marginRight: 4, flexShrink: 0 }} />
-              {t('囤囤鼠排行')}
-            </span>
-          }
-          itemKey='balance'
-        >
-          {myBalanceRank && (
-            <Card
-              className='mb-4 mt-4'
-              bodyStyle={{ padding: '12px 16px' }}
-              style={{
-                background:
-                  'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
-                border: '1px solid #f59e0b',
-              }}
-            >
-              <div className='flex items-center justify-between flex-wrap gap-3'>
-                <div className='flex items-center gap-3'>
-                  <Squirrel
-                    size={24}
-                    style={{ color: '#d97706' }}
-                  />
-                  <div>
-                    <Typography.Text strong style={{ fontSize: '14px' }}>
-                      {t('我的排名')}
-                    </Typography.Text>
-                    <div className='flex items-center gap-2 mt-1'>
-                      {renderUserCell(myBalanceRank)}
-                    </div>
-                  </div>
-                </div>
-                <div className='flex items-center gap-6 flex-wrap'>
-                  <div className='text-center'>
-                    <Typography.Text
-                      strong
-                      style={{
-                        fontSize: '24px',
-                        color: '#d97706',
-                      }}
-                    >
-                      #{myBalanceRank.rank}
-                    </Typography.Text>
-                    <Typography.Text
-                      type='tertiary'
-                      size='small'
-                      style={{ display: 'block' }}
-                    >
-                      {t('排名')}
-                    </Typography.Text>
-                  </div>
-                  <div className='text-center'>
-                    <Typography.Text strong style={{ fontSize: '16px' }}>
-                      ${(myBalanceRank.amount_usd || 0).toFixed(2)}
-                    </Typography.Text>
-                    <Typography.Text
-                      type='tertiary'
-                      size='small'
-                      style={{ display: 'block' }}
-                    >
-                      {t('余额')}
-                    </Typography.Text>
-                  </div>
-                </div>
-              </div>
-            </Card>
-          )}
+        </TabsContent>
+
+        <TabsContent value='balance'>
           <div className='mt-4'>
-            <CardTable
+            {myBalanceRank && (
+              <MyRankCard
+                rank={myBalanceRank}
+                icon={Squirrel}
+                color='#d97706'
+                showBalance
+              />
+            )}
+            <Table
               loading={balanceLoading}
               columns={balanceColumns}
               dataSource={balanceData}
               rowKey='rank'
-              hidePagination={true}
+              emptyText={t('暂无数据')}
             />
           </div>
-        </TabPane>
+        </TabsContent>
       </Tabs>
     </div>
   );

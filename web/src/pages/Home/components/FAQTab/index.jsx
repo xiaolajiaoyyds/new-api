@@ -1,28 +1,35 @@
-import React, { useEffect, useState, useContext, useMemo, useCallback } from 'react';
-import {
-  Collapse,
-  List,
-  Button,
-  Form,
-  Modal,
-  Typography,
-  Card,
-  Divider,
-  Spin,
-  Empty,
-  Tag,
-  Pagination,
-  Avatar,
-} from '@douyinfe/semi-ui';
-import { IconPlus, IconMinus } from '@douyinfe/semi-icons';
+import React, {
+  useEffect,
+  useState,
+  useContext,
+  useMemo,
+  useCallback,
+} from 'react';
+import { Spin } from '@douyinfe/semi-ui';
 import { HelpCircle, MessageSquare, Send } from 'lucide-react';
 import { API, showError, showSuccess } from '../../../../helpers';
 import { useTranslation } from 'react-i18next';
 import { marked } from 'marked';
 import { StatusContext } from '../../../../context/Status';
 import { UserContext } from '../../../../context/User';
-
-const { Text, Title } = Typography;
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  Button,
+  Badge,
+  Avatar,
+  Empty,
+  Pagination,
+  Modal,
+  Input,
+  Textarea,
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from '../../../../components/retroui';
 
 const FAQTab = () => {
   const { t } = useTranslation();
@@ -36,10 +43,26 @@ const FAQTab = () => {
   const [showMyPosts, setShowMyPosts] = useState(false);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
-  const [formData, setFormData] = useState({ title: '', question: '', solution: '' });
+  const [formData, setFormData] = useState({
+    title: '',
+    question: '',
+    solution: '',
+  });
 
-  const claudeIssues = useMemo(() => (statusState?.status?.faq || []).filter(item => item.category === 'claude_code'), [statusState?.status?.faq]);
-  const groupIssues = useMemo(() => (statusState?.status?.faq || []).filter(item => item.category !== 'claude_code'), [statusState?.status?.faq]);
+  const claudeIssues = useMemo(
+    () =>
+      (statusState?.status?.faq || []).filter(
+        (item) => item.category === 'claude_code',
+      ),
+    [statusState?.status?.faq],
+  );
+  const groupIssues = useMemo(
+    () =>
+      (statusState?.status?.faq || []).filter(
+        (item) => item.category !== 'claude_code',
+      ),
+    [statusState?.status?.faq],
+  );
 
   const fetchBoardPosts = useCallback(async (pageNum = 1) => {
     setBoardLoading(true);
@@ -53,7 +76,6 @@ const FAQTab = () => {
       }
     } catch (error) {
       showError(error.message);
-      console.error(error);
     } finally {
       setBoardLoading(false);
     }
@@ -70,7 +92,6 @@ const FAQTab = () => {
       }
     } catch (error) {
       showError(error.message);
-      console.error(error);
     }
   }, [userState?.user?.id]);
 
@@ -107,44 +128,65 @@ const FAQTab = () => {
     }
   };
 
-  const getStatusTag = (status) => {
+  const getStatusBadge = (status) => {
     switch (status) {
       case 0:
-        return <Tag color='orange'>{t('待审核')}</Tag>;
+        return (
+          <Badge variant='warning' size='sm'>
+            {t('待审核')}
+          </Badge>
+        );
       case 1:
-        return <Tag color='green'>{t('已通过')}</Tag>;
+        return (
+          <Badge variant='success' size='sm'>
+            {t('已通过')}
+          </Badge>
+        );
       case 2:
-        return <Tag color='red'>{t('已拒绝')}</Tag>;
+        return (
+          <Badge variant='danger' size='sm'>
+            {t('已拒绝')}
+          </Badge>
+        );
       default:
         return null;
     }
   };
 
-  const renderKnownIssues = (issues, title, color) => (
-    <Card
-      className='mb-4'
-      title={
+  const renderKnownIssues = (issues, title, variant) => (
+    <Card className='mb-4'>
+      <CardHeader>
         <div className='flex items-center gap-2'>
-          <HelpCircle size={16} />
-          <span>{title}</span>
-          <Tag color={color} size='small'>{issues.length}</Tag>
+          <HelpCircle className='w-5 h-5' />
+          <CardTitle className='text-lg'>{title}</CardTitle>
+          <Badge variant={variant} size='sm'>
+            {issues.length}
+          </Badge>
         </div>
-      }
-    >
-      {issues.length > 0 ? (
-        <Collapse accordion expandIcon={<IconPlus />} collapseIcon={<IconMinus />}>
-          {issues.map((item, index) => (
-            <Collapse.Panel header={item.question} itemKey={String(index)} key={index}>
-              <div
-                className='prose prose-sm max-w-none'
-                dangerouslySetInnerHTML={{ __html: marked.parse(item.answer || '') }}
-              />
-            </Collapse.Panel>
-          ))}
-        </Collapse>
-      ) : (
-        <Empty description={t('暂无相关问题')} />
-      )}
+      </CardHeader>
+      <CardContent>
+        {issues.length > 0 ? (
+          <Accordion>
+            {issues.map((item, index) => (
+              <AccordionItem key={index} value={String(index)}>
+                <AccordionTrigger value={String(index)}>
+                  {item.question}
+                </AccordionTrigger>
+                <AccordionContent value={String(index)}>
+                  <div
+                    className='prose prose-sm max-w-none dark:prose-invert'
+                    dangerouslySetInnerHTML={{
+                      __html: marked.parse(item.answer || ''),
+                    }}
+                  />
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        ) : (
+          <Empty description={t('暂无相关问题')} />
+        )}
+      </CardContent>
     </Card>
   );
 
@@ -152,30 +194,35 @@ const FAQTab = () => {
 
   return (
     <div className='p-4'>
-      <Title heading={4} className='mb-4'>{t('常见问题')}</Title>
+      <h2 className='text-2xl font-bold text-black dark:text-white mb-4'>
+        {t('常见问题')}
+      </h2>
 
       {renderKnownIssues(claudeIssues, t('Claude Code 相关问题'), 'purple')}
-      {renderKnownIssues(groupIssues, t('Default 分组相关问题'), 'blue')}
+      {renderKnownIssues(groupIssues, t('Default 分组相关问题'), 'info')}
 
-      <Divider margin='24px' />
+      <div className='h-px bg-black dark:bg-white my-6' />
 
-      <div className='flex justify-between items-center mb-4'>
+      <div className='flex justify-between items-center mb-4 flex-wrap gap-3'>
         <div className='flex items-center gap-2'>
-          <MessageSquare size={20} />
-          <Title heading={4} style={{ margin: 0 }}>{t('用户留言板')}</Title>
+          <MessageSquare className='w-5 h-5' />
+          <h2 className='text-2xl font-bold text-black dark:text-white'>
+            {t('用户留言板')}
+          </h2>
         </div>
         <div className='flex gap-2'>
           {userState?.user?.id && (
             <Button
-              theme={showMyPosts ? 'solid' : 'light'}
+              variant={showMyPosts ? 'primary' : 'secondary'}
+              size='sm'
               onClick={() => setShowMyPosts(!showMyPosts)}
             >
               {showMyPosts ? t('查看全部') : t('我的留言')}
             </Button>
           )}
           <Button
-            icon={<Send size={14} />}
-            theme='solid'
+            variant='primary'
+            size='sm'
             onClick={() => {
               if (!userState?.user?.id) {
                 showError(t('请先登录'));
@@ -184,59 +231,80 @@ const FAQTab = () => {
               setShowModal(true);
             }}
           >
+            <Send className='w-4 h-4 mr-1' />
             {t('我要提问')}
           </Button>
         </div>
       </div>
 
       <Spin spinning={boardLoading}>
-        <List
-          dataSource={displayMessages}
-          renderItem={(item) => (
-            <List.Item
-              className='!py-4'
-              main={
-                <div>
-                  <div className='flex items-center gap-2 mb-2'>
-                    {item.title && <Text strong>{item.title}</Text>}
-                    {showMyPosts && getStatusTag(item.status)}
-                  </div>
-                  <div className='text-gray-600 whitespace-pre-wrap'>{item.question}</div>
-                  {item.solution && (
-                    <Card className='mt-3 bg-green-50' bodyStyle={{ padding: 12 }}>
-                      <Text type='success' strong>{t('解决方案：')}</Text>
-                      <div className='mt-1 whitespace-pre-wrap'>{item.solution}</div>
-                    </Card>
-                  )}
-                  {item.admin_reply && (
-                    <Card className='mt-3 bg-blue-50' bodyStyle={{ padding: 12 }}>
-                      <Text style={{ color: 'var(--semi-color-primary)' }} strong>{t('管理员回复：')}</Text>
-                      <div className='mt-1 whitespace-pre-wrap'>{item.admin_reply}</div>
-                    </Card>
-                  )}
-                  {showMyPosts && item.status === 2 && item.review_note && (
-                    <Card className='mt-3 bg-red-50' bodyStyle={{ padding: 12 }}>
-                      <Text type='danger' strong>{t('拒绝原因：')}</Text>
-                      <div className='mt-1'>{item.review_note}</div>
-                    </Card>
-                  )}
-                </div>
-              }
-              extra={
-                <div className='text-right text-gray-400 text-sm'>
-                  <div className='flex items-center justify-end gap-2'>
-                    {item.linux_do_avatar && (
-                      <Avatar size='extra-small' src={item.linux_do_avatar} />
+        {displayMessages.length > 0 ? (
+          <div className='space-y-4'>
+            {displayMessages.map((item, index) => (
+              <Card key={index} padding='sm'>
+                <div className='flex justify-between items-start gap-4'>
+                  <div className='flex-1 min-w-0'>
+                    <div className='flex items-center gap-2 mb-2 flex-wrap'>
+                      {item.title && (
+                        <span className='font-bold text-black dark:text-white'>
+                          {item.title}
+                        </span>
+                      )}
+                      {showMyPosts && getStatusBadge(item.status)}
+                    </div>
+                    <div className='text-gray-600 dark:text-gray-400 whitespace-pre-wrap'>
+                      {item.question}
+                    </div>
+                    {item.solution && (
+                      <div className='mt-3 p-3 bg-green-100 dark:bg-green-900/30 border-2 border-black dark:border-white'>
+                        <span className='font-bold text-green-700 dark:text-green-400'>
+                          {t('解决方案：')}
+                        </span>
+                        <div className='mt-1 whitespace-pre-wrap text-black dark:text-white'>
+                          {item.solution}
+                        </div>
+                      </div>
                     )}
-                    <span>{item.linux_do_username || item.user_name}</span>
+                    {item.admin_reply && (
+                      <div className='mt-3 p-3 bg-blue-100 dark:bg-blue-900/30 border-2 border-black dark:border-white'>
+                        <span className='font-bold text-blue-700 dark:text-blue-400'>
+                          {t('管理员回复：')}
+                        </span>
+                        <div className='mt-1 whitespace-pre-wrap text-black dark:text-white'>
+                          {item.admin_reply}
+                        </div>
+                      </div>
+                    )}
+                    {showMyPosts && item.status === 2 && item.review_note && (
+                      <div className='mt-3 p-3 bg-red-100 dark:bg-red-900/30 border-2 border-black dark:border-white'>
+                        <span className='font-bold text-red-700 dark:text-red-400'>
+                          {t('拒绝原因：')}
+                        </span>
+                        <div className='mt-1 text-black dark:text-white'>
+                          {item.review_note}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  <div>{new Date(item.created_at * 1000).toLocaleDateString()}</div>
+                  <div className='text-right text-gray-400 text-sm flex-shrink-0'>
+                    <div className='flex items-center justify-end gap-2'>
+                      {item.linux_do_avatar && (
+                        <Avatar size='xs' src={item.linux_do_avatar} />
+                      )}
+                      <span>{item.linux_do_username || item.user_name}</span>
+                    </div>
+                    <div>
+                      {new Date(item.created_at * 1000).toLocaleDateString()}
+                    </div>
+                  </div>
                 </div>
-              }
-            />
-          )}
-          emptyContent={<Empty description={t('暂无留言')} />}
-        />
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <Empty description={t('暂无留言')} />
+        )}
+
         {!showMyPosts && total > 10 && (
           <div className='flex justify-center mt-4'>
             <Pagination
@@ -256,36 +324,39 @@ const FAQTab = () => {
         title={t('提交问题')}
         visible={showModal}
         onOk={handleSubmit}
-        onCancel={() => setShowModal(false)}
-        confirmLoading={formLoading}
+        onClose={() => setShowModal(false)}
         okText={t('提交')}
         cancelText={t('取消')}
+        okLoading={formLoading}
       >
-        <Form layout='vertical'>
-          <Form.Input
-            field='title'
+        <div className='space-y-4'>
+          <Input
             label={t('标题（可选）')}
             placeholder={t('简要描述您的问题')}
             value={formData.title}
-            onChange={(v) => setFormData({ ...formData, title: v })}
+            onChange={(e) =>
+              setFormData({ ...formData, title: e.target.value })
+            }
           />
-          <Form.TextArea
-            field='question'
+          <Textarea
             label={t('问题描述')}
             placeholder={t('详细描述您遇到的问题')}
             rows={4}
             value={formData.question}
-            onChange={(v) => setFormData({ ...formData, question: v })}
+            onChange={(e) =>
+              setFormData({ ...formData, question: e.target.value })
+            }
           />
-          <Form.TextArea
-            field='solution'
+          <Textarea
             label={t('解决方案（可选）')}
             placeholder={t('如果您已找到解决方案，可以分享给其他用户')}
             rows={3}
             value={formData.solution}
-            onChange={(v) => setFormData({ ...formData, solution: v })}
+            onChange={(e) =>
+              setFormData({ ...formData, solution: e.target.value })
+            }
           />
-        </Form>
+        </div>
       </Modal>
     </div>
   );

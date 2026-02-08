@@ -1,10 +1,19 @@
 import React, { useState } from 'react';
-import { Typography, Card, List, Button, Tabs, TabPane, Banner } from '@douyinfe/semi-ui';
-import { IconGithubLogo, IconTerminal, IconCopy } from '@douyinfe/semi-icons';
 import { useTranslation } from 'react-i18next';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+  Button,
+  Alert,
+} from '../../../../components/retroui';
+import { Github, Terminal, Copy } from 'lucide-react';
 import { copy, showSuccess } from '../../../../helpers';
-
-const { Title, Text } = Typography;
 
 const CodexGuide = () => {
   const { t } = useTranslation();
@@ -56,154 +65,164 @@ source ~/.bashrc`,
   };
 
   const CodeBlock = ({ code, label }) => (
-    <div className='relative'>
+    <div>
       <div className='flex items-center justify-between mb-2'>
-        <Text type='secondary' size='small'>
+        <span className='text-sm text-gray-600 dark:text-gray-400 font-medium'>
           {label}
-        </Text>
-        <Button
-          icon={<IconCopy />}
-          size='small'
-          theme='borderless'
-          onClick={() => handleCopy(code)}
-        />
+        </span>
+        <Button size='sm' variant='secondary' onClick={() => handleCopy(code)}>
+          <Copy className='w-4 h-4' />
+        </Button>
       </div>
-      <pre className='bg-gray-50 dark:bg-gray-800 p-4 rounded border border-gray-100 dark:border-gray-700 overflow-x-auto font-mono text-sm whitespace-pre-wrap'>
+      <pre className='bg-gray-100 dark:bg-zinc-800 p-4 border-2 border-black dark:border-white font-mono text-sm overflow-x-auto whitespace-pre-wrap'>
         <code>{code}</code>
       </pre>
     </div>
   );
 
+  const ListItem = ({ children, warning }) => (
+    <div
+      className={`py-2 ${warning ? 'text-amber-600 dark:text-amber-400 font-medium' : 'text-black dark:text-white'}`}
+    >
+      {children}
+    </div>
+  );
+
   return (
     <div className='space-y-4'>
-      <Banner
-        type='info'
-        description={t('OpenAI Codex CLI 是 OpenAI 官方推出的本地编程代理工具，支持通过自定义代理使用，推荐使用 cc-switch 进行管理')}
-        className='mb-4'
-      />
+      <Alert variant='info'>
+        {t(
+          'OpenAI Codex CLI 是 OpenAI 官方推出的本地编程代理工具，支持通过自定义代理使用，推荐使用 cc-switch 进行管理',
+        )}
+      </Alert>
 
-      <Card
-        title={t('安装 Codex CLI')}
-        headerExtraContent={<IconTerminal />}
-      >
-        <div className='space-y-4'>
-          <CodeBlock
-            code={installCommands.npm}
-            label={t('使用 npm 安装')}
-          />
+      <Card>
+        <CardHeader>
+          <div className='flex items-center gap-2'>
+            <Terminal className='w-5 h-5' />
+            <CardTitle>{t('安装 Codex CLI')}</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className='space-y-4'>
+          <CodeBlock code={installCommands.npm} label={t('使用 npm 安装')} />
           <CodeBlock
             code={installCommands.brew}
             label={t('使用 Homebrew 安装 (macOS)')}
           />
-          <div className='flex items-center gap-2 mt-4'>
-            <Text type='secondary'>{t('或从 GitHub 下载二进制文件')}</Text>
+          <div className='flex items-center gap-2 mt-4 flex-wrap'>
+            <span className='text-gray-600 dark:text-gray-400'>
+              {t('或从 GitHub 下载二进制文件')}
+            </span>
             <Button
-              icon={<IconGithubLogo />}
-              theme='light'
-              type='tertiary'
-              size='small'
+              size='sm'
+              variant='secondary'
               onClick={() =>
-                window.open('https://github.com/openai/codex/releases/latest', '_blank')
+                window.open(
+                  'https://github.com/openai/codex/releases/latest',
+                  '_blank',
+                )
               }
             >
+              <Github className='w-4 h-4 mr-1' />
               {t('GitHub Releases')}
             </Button>
           </div>
-        </div>
+        </CardContent>
       </Card>
 
-      <Card title={t('配置代理')}>
-        <List className='mb-4'>
-          <List.Item>
-            <Text>
-              {t('1. 请确保在 "codex" 专用分组创建 API Key（该分组仅支持 Codex CLI）')}
-            </Text>
-          </List.Item>
-          <List.Item>
-            <Text>
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('配置代理')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className='space-y-2 border-l-4 border-amber-500 pl-4 mb-4'>
+            <ListItem>
+              {t(
+                '1. 请确保在 "codex" 专用分组创建 API Key（该分组仅支持 Codex CLI）',
+              )}
+            </ListItem>
+            <ListItem>
               {t('2. 创建或编辑配置文件 ~/.codex/config.toml')}
-            </Text>
-          </List.Item>
-        </List>
-        <CodeBlock
-          code={configContent}
-          label={t('config.toml 配置示例')}
-        />
+            </ListItem>
+          </div>
+          <CodeBlock code={configContent} label={t('config.toml 配置示例')} />
+        </CardContent>
       </Card>
 
-      <Card title={t('设置环境变量')}>
-        <Tabs
-          activeKey={activeOS}
-          onChange={setActiveOS}
-          type='button'
-          className='mb-4'
-        >
-          <TabPane tab='macOS' itemKey='macos' />
-          <TabPane tab='Linux' itemKey='linux' />
-          <TabPane tab='Windows' itemKey='windows' />
-        </Tabs>
-
-        <div className='space-y-6'>
-          <CodeBlock
-            code={envCommands[activeOS].temporary}
-            label={t('临时设置（当前终端会话有效）')}
-          />
-          <CodeBlock
-            code={envCommands[activeOS].permanent}
-            label={t('永久设置（需要重启终端生效）')}
-          />
-        </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('设置环境变量')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Tabs value={activeOS} onValueChange={setActiveOS} className='mb-4'>
+            <TabsList>
+              <TabsTrigger value='macos'>macOS</TabsTrigger>
+              <TabsTrigger value='linux'>Linux</TabsTrigger>
+              <TabsTrigger value='windows'>Windows</TabsTrigger>
+            </TabsList>
+            <TabsContent value={activeOS}>
+              <div className='space-y-6 mt-4'>
+                <CodeBlock
+                  code={envCommands[activeOS].temporary}
+                  label={t('临时设置（当前终端会话有效）')}
+                />
+                <CodeBlock
+                  code={envCommands[activeOS].permanent}
+                  label={t('永久设置（需要重启终端生效）')}
+                />
+              </div>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
       </Card>
 
-      <Card title={t('启动使用')}>
-        <List>
-          <List.Item>
-            <Text>
-              {t('配置完成后，在终端运行 codex 即可启动')}
-            </Text>
-          </List.Item>
-          <List.Item>
-            <Text type='secondary'>
-              {t('首次运行会提示登录，选择 "Sign in with API key" 使用 API Key 登录')}
-            </Text>
-          </List.Item>
-        </List>
-        <div className='mt-4'>
-          <CodeBlock
-            code='codex'
-            label={t('启动 Codex CLI')}
-          />
-        </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('启动使用')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className='space-y-2 border-l-4 border-green-500 pl-4 mb-4'>
+            <ListItem>{t('配置完成后，在终端运行 codex 即可启动')}</ListItem>
+            <ListItem>
+              <span className='text-gray-600 dark:text-gray-400'>
+                {t(
+                  '首次运行会提示登录，选择 "Sign in with API key" 使用 API Key 登录',
+                )}
+              </span>
+            </ListItem>
+          </div>
+          <CodeBlock code='codex' label={t('启动 Codex CLI')} />
+        </CardContent>
       </Card>
 
-      <Card title={t('注意事项')}>
-        <List>
-          <List.Item>
-            <Text type='warning'>
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('注意事项')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className='space-y-2 border-l-4 border-red-500 pl-4'>
+            <ListItem warning>
               {t('请将 your-api-key 替换为您在 codex 分组创建的实际 API Key')}
-            </Text>
-          </List.Item>
-          <List.Item>
-            <Text>
+            </ListItem>
+            <ListItem>
               {t('Codex CLI 支持多种模型，可在 config.toml 中修改 model 参数')}
-            </Text>
-          </List.Item>
-          <List.Item>
-            <Text>
-              {t('更多配置选项请参考官方文档')}
-            </Text>
-            <Button
-              theme='borderless'
-              type='primary'
-              size='small'
-              onClick={() =>
-                window.open('https://developers.openai.com/codex', '_blank')
-              }
-            >
-              {t('查看文档')}
-            </Button>
-          </List.Item>
-        </List>
+            </ListItem>
+            <ListItem>
+              <div className='flex items-center gap-2 flex-wrap'>
+                <span>{t('更多配置选项请参考官方文档')}</span>
+                <Button
+                  size='sm'
+                  variant='outline'
+                  onClick={() =>
+                    window.open('https://developers.openai.com/codex', '_blank')
+                  }
+                >
+                  {t('查看文档')}
+                </Button>
+              </div>
+            </ListItem>
+          </div>
+        </CardContent>
       </Card>
     </div>
   );

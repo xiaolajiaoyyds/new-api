@@ -1738,7 +1738,7 @@ const EditChannelModal = (props) => {
         visible={props.visible}
         width={isMobile ? '100%' : 600}
         footer={
-          <div className='flex justify-between items-center bg-white'>
+          <div className='flex justify-between items-center bg-white dark:bg-zinc-800'>
             <div className='flex gap-2'>
               <Button
                 size='small'

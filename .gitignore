@@ -27,3 +27,4 @@ data/
 .serena/
 .gocache-temp
 .gopath
+.ace-tool/

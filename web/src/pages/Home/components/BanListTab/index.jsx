@@ -1,21 +1,10 @@
 import React, { useEffect, useState, useContext } from 'react';
-import {
-  Table,
-  Typography,
-  Tag,
-  Button,
-  Empty,
-  Spin,
-  Avatar,
-  Space,
-} from '@douyinfe/semi-ui';
-import { IconUser } from '@douyinfe/semi-icons';
+import { User } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { API, showError } from '../../../../helpers';
 import { UserContext } from '../../../../context/User';
+import { Table, Button, Badge, Avatar, Empty } from '../../../../components/retroui';
 import AppealModal from './AppealModal';
-
-const { Text } = Typography;
 
 const BanListTab = () => {
   const { t } = useTranslation();
@@ -61,28 +50,30 @@ const BanListTab = () => {
       dataIndex: 'linux_do_username',
       key: 'linux_do_user',
       render: (text, record) => (
-        <Space>
+        <div className="flex items-center gap-2">
           {record.linux_do_avatar ? (
-            <Avatar size='small' src={record.linux_do_avatar} />
+            <Avatar size="sm" src={record.linux_do_avatar} />
           ) : (
-            <Avatar size='small' icon={<IconUser />} />
+            <Avatar size="sm">
+              <User className="w-4 h-4" />
+            </Avatar>
           )}
-          <Text strong>{text || '-'}</Text>
-        </Space>
+          <span className="font-bold text-black dark:text-white">{text || '-'}</span>
+        </div>
       ),
     },
     {
       title: t('站内用户名'),
       dataIndex: 'display_name',
       key: 'display_name',
-      render: (text) => <Text>{text || '-'}</Text>,
+      render: (text) => <span className="text-black dark:text-white">{text || '-'}</span>,
     },
     {
       title: t('封禁理由'),
       dataIndex: 'ban_reason',
       key: 'ban_reason',
       render: (text) => (
-        <Text type='danger'>{text || t('未说明')}</Text>
+        <span className="text-red-600 dark:text-red-400">{text || t('未说明')}</span>
       ),
     },
     {
@@ -92,9 +83,9 @@ const BanListTab = () => {
       width: 120,
       render: (hasPending) =>
         hasPending ? (
-          <Tag color='orange'>{t('申诉中')}</Tag>
+          <Badge variant="warning">{t('申诉中')}</Badge>
         ) : (
-          <Tag color='grey'>{t('未申诉')}</Tag>
+          <Badge variant="default">{t('未申诉')}</Badge>
         ),
     },
     {
@@ -102,13 +93,11 @@ const BanListTab = () => {
       key: 'action',
       width: 100,
       render: (_, record) => {
-        const canAppeal =
-          isCurrentUserBanned(record.id) && !record.has_pending_appeal;
+        const canAppeal = isCurrentUserBanned(record.id) && !record.has_pending_appeal;
         return canAppeal ? (
           <Button
-            size='small'
-            theme='solid'
-            type='warning'
+            size="sm"
+            variant="primary"
             onClick={() => handleAppealClick(record)}
           >
             {t('申诉')}
@@ -119,22 +108,23 @@ const BanListTab = () => {
   ];
 
   return (
-    <div className='p-4'>
-      <Spin spinning={loading}>
-        {bannedUsers.length > 0 ? (
-          <Table
-            columns={columns}
-            dataSource={bannedUsers}
-            rowKey='id'
-            pagination={false}
-          />
-        ) : (
-          <Empty
-            image={<IconUser style={{ fontSize: 48, color: 'var(--semi-color-text-2)' }} />}
-            description={t('暂无封禁用户')}
-          />
-        )}
-      </Spin>
+    <div className="p-4">
+      {bannedUsers.length > 0 ? (
+        <Table
+          columns={columns}
+          dataSource={bannedUsers}
+          rowKey="id"
+          loading={loading}
+          emptyText={t('暂无封禁用户')}
+        />
+      ) : loading ? (
+        <Table columns={columns} dataSource={[]} loading={true} />
+      ) : (
+        <Empty
+          icon={User}
+          description={t('暂无封禁用户')}
+        />
+      )}
 
       <AppealModal
         visible={appealModalVisible}

@@ -75,13 +75,12 @@ const LanguageSelector = ({ currentLang, onLanguageChange, t }) => {
         </Dropdown.Menu>
       }
     >
-      <Button
-        icon={<Languages size={18} />}
+      <div
         aria-label={t('common.changeLanguage')}
-        theme='borderless'
-        type='tertiary'
-        className='!p-1.5 !text-current focus:!bg-semi-color-fill-1 dark:focus:!bg-gray-700 !rounded-full !bg-semi-color-fill-0 dark:!bg-semi-color-fill-1 hover:!bg-semi-color-fill-1 dark:hover:!bg-semi-color-fill-2'
-      />
+        className='p-1.5 border-2 border-black dark:border-white bg-transparent hover:bg-gray-100 dark:hover:bg-zinc-700 shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.2)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none cursor-pointer transition-all'
+      >
+        <Languages size={18} />
+      </div>
     </Dropdown>
   );
 };

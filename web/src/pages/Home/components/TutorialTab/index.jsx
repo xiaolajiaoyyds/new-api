@@ -1,6 +1,11 @@
 import React from 'react';
-import { Tabs, TabPane } from '@douyinfe/semi-ui';
 import { useTranslation } from 'react-i18next';
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from '../../../../components/retroui';
 import OpenAIGuide from './OpenAIGuide';
 import ClaudeCodeGuide from './ClaudeCodeGuide';
 import CodexGuide from './CodexGuide';
@@ -9,23 +14,39 @@ const TutorialTab = () => {
   const { t } = useTranslation();
 
   return (
-    <div className='p-4'>
-      <Tabs type='line' defaultActiveKey='openai'>
-        <TabPane tab={t('OpenAI 配置教程')} itemKey='openai'>
-          <div className='pt-4'>
+    <div className='w-full'>
+      <Tabs defaultValue='openai' className='w-full'>
+        <div
+          className='mb-5 overflow-x-auto scrollbar-hide'
+          style={{ WebkitOverflowScrolling: 'touch' }}
+        >
+          <TabsList className='w-max'>
+            <TabsTrigger value='openai'>{t('OpenAI 配置')}</TabsTrigger>
+            <TabsTrigger value='claude'>{t('Claude Code')}</TabsTrigger>
+            <TabsTrigger value='codex'>{t('Codex CLI')}</TabsTrigger>
+          </TabsList>
+        </div>
+
+        <div className='w-full'>
+          <TabsContent
+            value='openai'
+            className='focus:outline-none mt-0 animate-in fade-in slide-in-from-bottom-2 duration-500'
+          >
             <OpenAIGuide />
-          </div>
-        </TabPane>
-        <TabPane tab={t('Claude Code 使用教程')} itemKey='claude'>
-          <div className='pt-4'>
+          </TabsContent>
+          <TabsContent
+            value='claude'
+            className='focus:outline-none mt-0 animate-in fade-in slide-in-from-bottom-2 duration-500'
+          >
             <ClaudeCodeGuide />
-          </div>
-        </TabPane>
-        <TabPane tab={t('Codex CLI 使用教程')} itemKey='codex'>
-          <div className='pt-4'>
+          </TabsContent>
+          <TabsContent
+            value='codex'
+            className='focus:outline-none mt-0 animate-in fade-in slide-in-from-bottom-2 duration-500'
+          >
             <CodexGuide />
-          </div>
-        </TabPane>
+          </TabsContent>
+        </div>
       </Tabs>
     </div>
   );

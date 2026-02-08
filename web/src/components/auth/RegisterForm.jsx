@@ -289,7 +289,10 @@ const RegisterForm = () => {
       setGithubButtonDisabled(true);
     }, 20000);
     try {
-      onGitHubOAuthClicked(status.github_client_id, { shouldLogout: true, invitationCode: inputs.invitation_code });
+      onGitHubOAuthClicked(status.github_client_id, {
+        shouldLogout: true,
+        invitationCode: inputs.invitation_code,
+      });
     } finally {
       setTimeout(() => setGithubLoading(false), 3000);
     }
@@ -302,7 +305,10 @@ const RegisterForm = () => {
     }
     setDiscordLoading(true);
     try {
-      onDiscordOAuthClicked(status.discord_client_id, { shouldLogout: true, invitationCode: inputs.invitation_code });
+      onDiscordOAuthClicked(status.discord_client_id, {
+        shouldLogout: true,
+        invitationCode: inputs.invitation_code,
+      });
     } finally {
       setTimeout(() => setDiscordLoading(false), 3000);
     }
@@ -333,7 +339,10 @@ const RegisterForm = () => {
     }
     setLinuxdoLoading(true);
     try {
-      onLinuxDOOAuthClicked(status.linuxdo_client_id, { shouldLogout: true, invitationCode: inputs.invitation_code });
+      onLinuxDOOAuthClicked(status.linuxdo_client_id, {
+        shouldLogout: true,
+        invitationCode: inputs.invitation_code,
+      });
     } finally {
       setTimeout(() => setLinuxdoLoading(false), 3000);
     }
@@ -392,14 +401,14 @@ const RegisterForm = () => {
         <div className='w-full max-w-md'>
           <div className='flex items-center justify-center mb-6 gap-2'>
             <img src={logo} alt='Logo' className='h-10 rounded-full' />
-            <Title heading={3} className='!text-gray-800'>
+            <Title heading={3} className='!text-gray-800 dark:!text-gray-200'>
               {systemName}
             </Title>
           </div>
 
-          <Card className='border-0 !rounded-2xl overflow-hidden'>
+          <Card className='border-0 !rounded-2xl overflow-hidden bg-white dark:bg-zinc-800'>
             <div className='flex justify-center pt-6 pb-2'>
-              <Title heading={3} className='text-gray-800 dark:text-gray-200'>
+              <Title heading={3} className='!text-gray-800 dark:!text-gray-200'>
                 {t('注 册')}
               </Title>
             </div>
@@ -412,7 +421,9 @@ const RegisterForm = () => {
                       label={t('邀请码')}
                       placeholder={t('请输入邀请码')}
                       name='invitation_code'
-                      onChange={(value) => handleChange('invitation_code', value)}
+                      onChange={(value) =>
+                        handleChange('invitation_code', value)
+                      }
                       prefix={<IconKey />}
                     />
                   </Form>
@@ -550,16 +561,16 @@ const RegisterForm = () => {
         <div className='w-full max-w-md'>
           <div className='flex items-center justify-center mb-6 gap-2'>
             <img src={logo} alt='Logo' className='h-10 rounded-full' />
-            <Title heading={3} className='!text-gray-800'>
+            <h3 className='text-xl font-semibold text-gray-800 dark:text-white'>
               {systemName}
-            </Title>
+            </h3>
           </div>
 
-          <Card className='border-0 !rounded-2xl overflow-hidden'>
+          <Card className='border-0 !rounded-2xl overflow-hidden bg-white dark:bg-zinc-800'>
             <div className='flex justify-center pt-6 pb-2'>
-              <Title heading={3} className='text-gray-800 dark:text-gray-200'>
+              <h3 className='text-xl font-semibold text-gray-800 dark:text-white'>
                 {t('注 册')}
-              </Title>
+              </h3>
             </div>
             <div className='px-2 py-8'>
               <Form className='space-y-3'>
@@ -776,7 +787,7 @@ const RegisterForm = () => {
   };
 
   return (
-    <div className='relative overflow-hidden bg-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8'>
+    <div className='relative overflow-hidden bg-gray-100 dark:bg-transparent flex items-center justify-center min-h-[calc(100vh-120px)] py-12 px-4 sm:px-6 lg:px-8'>
       {/* 背景模糊晕染球 */}
       <div
         className='blur-ball blur-ball-indigo'
@@ -791,8 +802,17 @@ const RegisterForm = () => {
         <div className='w-full lg:w-80 lg:flex-shrink-0 mb-6 lg:mb-0 lg:sticky lg:top-[80px]'>
           <div className='p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg text-sm text-amber-800 dark:text-amber-200'>
             <div className='flex items-center gap-2 mb-3 font-medium'>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              <svg
+                xmlns='http://www.w3.org/2000/svg'
+                className='h-5 w-5'
+                viewBox='0 0 20 20'
+                fill='currentColor'
+              >
+                <path
+                  fillRule='evenodd'
+                  d='M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z'
+                  clipRule='evenodd'
+                />
               </svg>
               {t('温馨提示')}
             </div>
@@ -800,7 +820,9 @@ const RegisterForm = () => {
               {t('未注册用户请通过LDC商店购买注册邀请码后填入再进行注册')}
             </p>
             <p>
-              {t('如果出现无法登录的情况请先清除cookie和缓存后再试，如果依然报错说明你未注册本站或账号已被清理。')}
+              {t(
+                '如果出现无法登录的情况请先清除cookie和缓存后再试，如果依然报错说明你未注册本站或账号已被清理。',
+              )}
             </p>
           </div>
         </div>

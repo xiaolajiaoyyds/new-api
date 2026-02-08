@@ -395,14 +395,14 @@ const TwoFASetting = ({ t }) => {
                   </Tag>
                 )}
               </div>
-              <Typography.Text type='tertiary' className='text-sm'>
+              <Typography.Text type='tertiary' className='text-sm dark:text-gray-400'>
                 {t(
                   '两步验证（2FA）为您的账户提供额外的安全保护。启用后，登录时需要输入密码和验证器应用生成的验证码。',
                 )}
               </Typography.Text>
               {status.enabled && (
                 <div className='mt-2'>
-                  <Text size='small' type='secondary'>
+                  <Text size='small' type='secondary' className='dark:text-gray-400'>
                     {t('剩余备用码：')}
                     {status.backup_codes_remaining || 0}
                     {t('个')}
@@ -499,8 +499,8 @@ const TwoFASetting = ({ t }) => {
                     )}
                   </Paragraph>
                   <div className='flex justify-center mb-4'>
-                    <div className='bg-white p-4 rounded-lg shadow-sm'>
-                      <QRCodeSVG value={setupData.qr_code_data} size={180} />
+                    <div className='bg-white dark:bg-zinc-800 p-4 rounded-lg shadow-sm'>
+                    <QRCodeSVG value={setupData.qr_code_data} size={180} />
                     </div>
                   </div>
                   <div className='bg-blue-50 dark:bg-blue-900 rounded-lg p-3'>
