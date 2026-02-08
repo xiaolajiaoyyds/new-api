@@ -7,11 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  GHCR_IMAGE: ghcr.io/xiaolajiaoyyds/new-api
-
-permissions:
-  contents: read
-  packages: write
+  DOCKERHUB_IMAGE: xiaolajiaoyyds/new-api
 
 jobs:
   build_single_arch:
@@ -27,9 +23,6 @@ jobs:
             platform: linux/arm64
             runner: ubuntu-24.04-arm
     runs-on: ${{ matrix.runner }}
-    permissions:
-      packages: write
-      contents: read
     steps:
       - name: Check out
         uses: actions/checkout@v4
@@ -45,12 +38,11 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Log in to GHCR
+      - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GHCR_PAT }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build & push single-arch
         uses: docker/build-push-action@v6
@@ -58,7 +50,7 @@ jobs:
           context: .
           platforms: ${{ matrix.platform }}
           push: true
-          tags: ${{ env.GHCR_IMAGE }}:latest-${{ matrix.arch }}
+          tags: ${{ env.DOCKERHUB_IMAGE }}:latest-${{ matrix.arch }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           provenance: false
@@ -68,22 +60,16 @@ jobs:
     name: Create multi-arch manifest
     needs: build_single_arch
     runs-on: ubuntu-latest
-    permissions:
-      packages: write
-      contents: read
     steps:
-      - name: Log in to GHCR
+      - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GHCR_PAT }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Create & push multi-arch manifest
-        env:
-          GHCR_IMAGE: ghcr.io/xiaolajiaoyyds/new-api
         run: |
           docker buildx imagetools create \
-            -t $GHCR_IMAGE:latest \
-            $GHCR_IMAGE:latest-amd64 \
-            $GHCR_IMAGE:latest-arm64
+            -t xiaolajiaoyyds/new-api:latest \
+            xiaolajiaoyyds/new-api:latest-amd64 \
+            xiaolajiaoyyds/new-api:latest-arm64
